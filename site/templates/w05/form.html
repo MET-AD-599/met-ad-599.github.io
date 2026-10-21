@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Team algorithm{% endblock %}
+{% block head %}
+<style>
+  textarea { font-family: ui-monospace, monospace; font-size: .88rem; width: 100%; box-sizing: border-box; }
+  textarea.tall { min-height: 220px; } textarea.mid { min-height: 110px; }
+  input.team { max-width: 120px; }
+  .data a { margin-right: 10px; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Design a team-forming algorithm</h1><span class="course">{{ course }}</span></header>
+<div class="card">
+  <p style="margin:0 0 6px">With your team, design an algorithm that forms the <strong>best teams</strong> for this class. Use the class data from Weeks 1 to 4: every name is replaced by an ID like <code>S01</code>.</p>
+  <p class="data" style="margin:6px 0 0"><a class="btn" href="{{ url_for('week05.data', name='team_data.csv') }}">⬇ team_data.csv</a><a class="btn" href="{{ url_for('week05.data', name='team_variables.csv') }}">⬇ team_variables.csv</a><a class="btn" href="{{ url_for('week05.data', name='team_data.py') }}">⬇ team_data.py</a></p>
+  <p class="muted" style="margin:8px 0 0">Everyone types their own answers, even if your team agrees on them. Save as often as you like.</p>
+</div>
+{% if saved %}<p class="flash" id="saved">Saved{% if mine.submitted_at %} at {{ mine.submitted_at.slice(11, 16) }} UTC{% endif %}. You can keep editing.</p>{% endif %}
+<form method="post" action="{{ url_for('week05.index') }}">
+<div class="card">
+  <label class="q" for="team">Team number</label>
+  <input class="team" type="text" id="team" name="team" value="{{ mine.team or '' }}" autocomplete="off" required>
+</div>
+<div class="card">
+  <label class="q" for="inputs">1 · Identify all the inputs needed <span class="hint">Which columns or facts does your algorithm use? Why each one?</span></label>
+  <textarea class="mid" id="inputs" name="inputs" spellcheck="false">{{ mine.inputs or '' }}</textarea>
+</div>
+<div class="card">
+  <label class="q" for="steps">2 · Write the pseudocode or steps <span class="hint">Numbered steps, plain words. Someone else should be able to follow them.</span></label>
+  <textarea class="tall" id="steps" name="steps" spellcheck="false">{{ mine.steps or '' }}</textarea>
+</div>
+<div class="card">
+  <label class="q" for="improve">3 · How could you improve this? <span class="hint">What would make the teams better, fairer, or the algorithm faster?</span></label>
+  <textarea class="mid" id="improve" name="improve" spellcheck="false">{{ mine.improve or '' }}</textarea>
+</div>
+<button class="primary" type="submit">Save my answers</button>
+</form>
+{% endblock %}

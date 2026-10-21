@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Instructor login{% endblock %}
+{% block body %}
+<header><h1>Instructor login</h1><span class="course">{{ course }}</span></header>
+<form class="card" method="post">
+  {% set m = get_flashed_messages() %}{% if m %}<p class="flash">{{ m[0] }}</p>{% endif %}
+  <label class="q" for="password">Password</label>
+  <input type="password" id="password" name="password" autofocus required>
+  <button class="primary" type="submit">Sign in</button>
+</form>
+{% if student and student.is_admin %}<p class="muted">You are signed in as a superuser: <a href="{{ url_for('admin.overview') }}">open the dashboard</a>.</p>{% endif %}
+{% endblock %}

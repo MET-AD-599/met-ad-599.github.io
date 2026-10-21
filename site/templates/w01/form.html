@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 1{% endblock %}
+{% block body %}
+<header>
+  <h1>{% if r %}Edit your answers{% else %}Week 1 · Intro survey{% endif %}</h1>
+  <span class="course">{{ course }}</span>
+</header>
+
+<form class="card" method="post" action="{{ url_for('week01.submit') }}" autocomplete="off">
+
+  <div class="row">
+    <div>
+      <label class="q" for="first_name">1. First name</label>
+      <input type="text" id="first_name" value="{{ st.first_name }}" readonly style="background:#f1f1ee">
+    </div>
+    <div>
+      <label class="q" for="last_name">2. Last name</label>
+      <input type="text" id="last_name" value="{{ st.last_name }}" readonly style="background:#f1f1ee">
+    </div>
+  </div>
+
+  <label class="q" for="nickname">3. Nickname <span class="hint">(optional: what should we call you?)</span></label>
+  <input type="text" id="nickname" name="nickname" maxlength="40" value="{{ r.nickname if r else st.nickname }}">
+
+  <label class="q" for="bu_email">4. BU email</label>
+  <input type="email" id="bu_email" value="{{ st.username }}@bu.edu" readonly style="background:#f1f1ee">
+
+  <div class="row">
+    <div>
+      <label class="q" for="commute_mode">5. How did you get here?</label>
+      <select id="commute_mode" name="commute_mode" required>
+        {% for m in modes %}<option value="{{ m }}" {% if r and r.commute_mode == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="q" for="commute_min">6. How many minutes did it take for you to get to class?</label>
+      <input type="number" id="commute_min" name="commute_min" min="0" max="300" step="1" value="{{ r.commute_min if r else 30 }}" required>
+    </div>
+  </div>
+
+  <label class="q">7. Comfort <em>today</em>, 1 = none · 5 = very comfortable</label>
+  {% for tool in ["excel", "python", "sql"] %}
+  <div class="row" style="align-items:center; margin: 6px 0;">
+    <div style="flex:0 0 70px; font-weight:600">{{ {"excel":"Excel","python":"Python","sql":"SQL"}[tool] }}</div>
+    <div class="scale" style="flex:1">
+      {% for i in range(1, 6) %}
+      <label><input type="radio" name="comfort_{{ tool }}" value="{{ i }}" {% if (r and r["comfort_" ~ tool] == i) or (not r and i == 1) %}checked{% endif %}><span>{{ i }}</span></label>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+
+  <label class="q" for="program">8. Which program are you in?</label>
+  {% set is_other = r and r.program not in programs %}
+  <select id="program" name="program" required onchange="document.getElementById('program_other').hidden = this.value !== 'Other'">
+    {% set cur = r.program if r else st.program %}
+    {% for p in programs %}<option value="{{ p }}" {% if cur == p %}selected{% endif %}>{{ p }}</option>{% endfor %}
+    <option value="Other" {% if is_other %}selected{% endif %}>Other (type it in)</option>
+  </select>
+  <input type="text" id="program_other" name="program_other" maxlength="60" placeholder="Your program"
+         value="{{ r.program if is_other else '' }}" {% if not is_other %}hidden{% endif %} style="margin-top:8px">
+
+  <label class="q" for="business_q">9. One business question you'd love data to answer <span class="hint">(one sentence)</span></label>
+  <textarea id="business_q" name="business_q" maxlength="280" placeholder="Describe any data problem that you think is interesting to solve using analytics and programming" required>{{ r.business_q if r else '' }}</textarea>
+
+  <button class="primary" type="submit">{% if r %}Save changes{% else %}Submit{% endif %}</button>
+</form>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Roster{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block body %}
+<header><h1>Student roster</h1><span class="course">{{ course }}</span></header>
+<p class="topnav"><a href="{{ url_for('admin.overview') }}">← dashboard</a></p>
+{% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash">{{ m }}</p>{% endfor %}
+
+<form class="card" method="post" enctype="multipart/form-data">
+  <strong>Upload roster CSV</strong>
+  <p class="muted" style="margin:4px 0 10px">Columns: <code>username</code> (BU email, with or without @bu.edu), <code>password</code>, and optionally
+     <code>first_name</code>, <code>last_name</code>, <code>nickname</code>, <code>program</code>, <code>is_admin</code> (1 = superuser: can open student pages <em>and</em> this admin area).
+     Existing usernames are updated (password included); new ones are added. Nobody is removed.
+     <a href="{{ url_for('admin.roster_template') }}">Download template</a>.</p>
+  <div class="row" style="align-items:center">
+    <input type="file" name="roster" accept=".csv,text/csv" required>
+    <button class="btn" type="submit" style="flex:0 0 auto">Load roster</button>
+  </div>
+</form>
+
+{% if missing_sets %}<p class="flash">Students without a generated question set:{% for slug, n in missing_sets %} {{ slug }} · {{ n }}{% endfor %}. Run <code>tools\sync_content.bat</code> on your laptop, then they can open those pages.</p>{% endif %}
+<div class="card">
+  <p class="muted" style="margin:0 0 8px">{{ rows|length }} student{{ '' if rows|length == 1 else 's' }}</p>
+  <table>
+    <tr><th>username</th><th>password</th><th>first</th><th>last</th><th>nickname</th><th>program</th><th>admin</th><th></th></tr>
+    {% for r in rows %}
+    <tr>
+      <td><code>{{ r.username }}</code></td>
+      <td><code>{{ r.password }}</code></td>
+      <td>{{ r.first_name }}</td><td>{{ r.last_name }}</td><td>{{ r.nickname }}</td><td>{{ r.program }}</td><td>{% if r.is_admin %}<span class="pill ok">superuser</span>{% endif %}</td>
+      <td><form method="post" action="{{ url_for('admin.delete_student', sid=r.id) }}" style="display:inline"
+                onsubmit="return confirm('Remove {{ r.username }} from the roster?')"><button class="link danger">remove</button></form></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

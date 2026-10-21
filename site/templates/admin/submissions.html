@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · {{ mod.TITLE }} submissions{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block body %}
+<header><h1>{{ mod.TITLE }} · {{ rows|length }} submissions</h1><span class="course">{{ course }}</span></header>
+{% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash">{{ m }}</p>{% endfor %}
+<div class="toolbar">
+  {% if open %}<span class="pill ok">open</span>{% else %}<span class="pill">closed</span>{% endif %}
+  <form method="post" action="{{ url_for('admin.toggle', slug=slug) }}"><button class="btn">{{ 'Close submissions' if open else 'Open submissions' }}</button></form>
+  <span style="flex:1"></span>
+  <a href="{{ url_for('admin.analytics', slug=slug) }}">analytics</a>
+  <a href="{{ url_for('admin.report', slug=slug) }}">report</a>
+  <a href="{{ url_for('admin.export_csv', slug=slug) }}">⬇ csv</a>
+  <a href="{{ url_for('admin.export_json', slug=slug) }}">{ } json</a>
+</div>
+<div class="card" style="overflow-x:auto">
+<table>
+  <tr><th>#</th><th>time (UTC)</th>{% for col, label in columns %}<th>{{ label }}</th>{% endfor %}<th></th></tr>
+  {% for r in rows %}
+  <tr>
+    <td>{{ r.id }}</td><td>{{ r.submitted_at.slice(11, 16) }}</td>
+    {% for col, label in columns %}<td>{{ r[col] }}</td>{% endfor %}
+    <td><form method="post" action="{{ url_for('admin.delete_row', slug=slug, row_id=r.id) }}" onsubmit="return confirm('Delete #{{ r.id }}?')"><button class="link danger">delete</button></form></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="{{ columns|length + 3 }}" class="muted">No submissions yet.</td></tr>
+  {% endfor %}
+</table>
+</div>
+{% if has_import %}
+<form class="card" method="post" action="{{ url_for('admin.import_rows', slug=slug) }}" enctype="multipart/form-data">
+  <strong>Import submissions from CSV</strong>
+  <p class="muted" style="margin:4px 0 10px">Same columns as the CSV export. Each row is linked to a roster student by <code>bu_email</code> (load the roster first), so that student can open <code>/{{ slug }}/</code> and edit it. Rows are added, never replaced: delete duplicates below if you import twice.</p>
+  <div class="row" style="align-items:center">
+    <input type="file" name="csv" accept=".csv,text/csv" required>
+    <button class="btn" type="submit" style="flex:0 0 auto">Import</button>
+  </div>
+</form>
+{% endif %}
+<div class="card toolbar" style="justify-content:space-between">
+  <form method="post" action="{{ url_for('admin.seed', slug=slug) }}" class="toolbar" style="margin:0">
+    <label>Rehearsal: insert <input type="number" name="n" value="30" min="1" max="200" style="width:70px"> fake rows</label>
+    <button class="btn">Seed</button>
+  </form>
+  <form method="post" action="{{ url_for('admin.reset', slug=slug) }}" onsubmit="return confirm('Delete ALL submissions for {{ mod.TITLE }}? This cannot be undone.')">
+    <button class="btn danger">Delete all submissions</button>
+  </form>
+</div>
+{% endblock %}

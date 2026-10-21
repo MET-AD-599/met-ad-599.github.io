@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 2{% endblock %}
+{% block body %}
+<p class="topnav"><a href="{{ url_for('week02.index') }}">← all questions</a></p>
+<header><h1>{{ 'Worked example' if demo else 'Question' }} <span class="muted" style="font-weight:400;font-size:1rem">{{ pos }} of {{ n }}</span></h1><span class="course">{{ course }}</span></header>
+<div class="card" style="border-left:4px solid var(--accent)">
+  <p style="font-size:1.15rem;margin:0">“{{ q.text }}”</p>
+  {% if demo %}<p class="muted" style="margin:6px 0 0"><span class="pill">worked example</span> This one is filled in for everyone: we walk through it on the slides. It is read-only; pick any other question to do your own.</p>{% endif %}
+</div>
+
+{% if demo %}
+<div class="card">
+  <strong>The question, in more detail</strong>
+  <p style="margin:6px 0 0">{{ note.context }}</p>
+</div>
+{% else %}
+<form class="card" method="post" action="{{ url_for('week02.context', qid=q.id) }}" autocomplete="off">
+  <strong>First, describe the question in more detail</strong> {% if context_saved %}<span class="pill ok" style="margin-left:6px">saved</span>{% endif %}
+  <p class="muted" style="margin:4px 0 6px">Whose problem is it, what decision does it feed, where does the data come from, how often? This grounds everything below.</p>
+  <textarea name="context" maxlength="800" placeholder="e.g. A regional retailer with 40 stores wants to know which of last quarter's promotions actually lifted sales. Sales come from the POS export every night; promotions are a spreadsheet marketing keeps by hand.">{{ note.context }}</textarea>
+  <button class="btn" type="submit" style="margin-top:8px">{{ 'Update' if context_saved else 'Save' }}</button>
+</form>
+{% endif %}
+
+<div class="card">
+  <strong>{{ 'The variables' if demo else 'Your variables' }}</strong>
+  {% if not mine %}<p class="muted" style="margin:6px 0 0">None yet. What would one row of the data look like? What would you hand back?</p>{% endif %}
+  {% for role in ["input", "output"] %}
+    {% set rr = mine|selectattr("role", "equalto", role)|list %}
+    {% if rr %}
+    <p style="margin:12px 0 4px;font-weight:600;text-transform:uppercase;font-size:.78rem;letter-spacing:.04em;color:var(--muted)">{{ role }}s</p>
+    <table>
+      <tr><th>variable</th><th>type / structure</th><th>example</th><th></th></tr>
+      {% for r in rr %}
+      <tr>
+        <td><code>{{ r.var_name }}</code></td>
+        <td>{{ r.dtype }}</td>
+        <td><code style="white-space:pre-wrap">{{ r.example }}</code>{% if r.note %}<br><span class="muted" style="font-size:.85rem">{{ r.note }}</span>{% endif %}</td>
+        <td>{% if not demo %}<form method="post" action="{{ url_for('week02.delete', qid=q.id, row_id=r.id) }}"><button class="link danger">remove</button></form>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% if demo %}
+<div class="card" id="why" style="border-left:4px solid var(--c1)">
+  <strong>To solve this problem</strong> <span class="pill" style="margin-left:6px">worked example</span>
+  <table class="kv" style="margin-top:8px">
+    <tr><th>Which tool?</th><td>{{ labels[note.verdict] }}</td></tr>
+    <tr><th>Where Excel breaks</th><td>{% for c in note.reasons %}<span class="pill" style="margin:2px 4px 2px 0">{{ labels[c] }}</span>{% endfor %}</td></tr>
+    <tr><th>Rows per year</th><td>{{ labels[note.rows_scale] }}</td></tr>
+    <tr><th>In Excel I would build</th><td>{{ labels[note.excel_tool] }}</td></tr>
+    <tr><th>Comments</th><td>{{ note.excel_break }}</td></tr>
+  </table>
+</div>
+{% else %}
+<form class="card" id="add" method="post" action="{{ url_for('week02.add', qid=q.id) }}" autocomplete="off">
+  <strong>Add a variable</strong>
+  <div class="row">
+    <div>
+      <label class="q" for="var_name">Variable name <span class="hint">(snake_case)</span></label>
+      <input type="text" id="var_name" name="var_name" maxlength="60" placeholder="e.g. student_list" required autofocus>
+    </div>
+    <div>
+      <label class="q">Input or output?</label>
+      <div class="scale" style="grid-template-columns:1fr 1fr">
+        {% for role in roles %}<label><input type="radio" name="role" value="{{ role }}" {% if loop.first %}checked{% endif %}><span>{{ role }}</span></label>{% endfor %}
+      </div>
+    </div>
+  </div>
+  <label class="q" for="dtype">Data type / structure</label>
+  <select id="dtype" name="dtype" required>
+    <optgroup label="Scalars">{% for d in dtypes.slice(0, 5) %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</optgroup>
+    <optgroup label="Collections">{% for d in dtypes.slice(5, 12) %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</optgroup>
+    <optgroup label="Processing patterns">{% for d in dtypes.slice(12) %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</optgroup>
+  </select>
+  <label class="q" for="example">Example value <span class="hint">(write it the way Python would: <code>["a", "b"]</code>, <code>{"key": 3}</code>, <code>True</code>, <code>42.0</code>)</span></label>
+  <textarea id="example" name="example" maxlength="300" placeholder='{"Thomas": {"2026-09-21": True, "2026-09-28": False}}'></textarea>
+  <label class="q" for="note">Why this structure? <span class="hint">(optional, one phrase)</span></label>
+  <input type="text" id="note" name="note" maxlength="200" placeholder="ordered by date, so a list">
+  <button class="primary" type="submit">Add variable</button>
+</form>
+
+<form class="card" id="why" method="post" action="{{ url_for('week02.note', qid=q.id) }}" autocomplete="off" style="border-left:4px solid var(--c1)">
+  <strong>To solve this problem</strong> {% if saved %}<span class="pill ok" style="margin-left:6px">saved</span>{% endif %}
+
+  <label class="q">1. Which tool would you reach for?</label>
+  <div class="scale" style="grid-template-columns:repeat(3,1fr)">
+    {% for code, lbl in verdicts %}<label><input type="radio" name="verdict" value="{{ code }}" {% if note.verdict == code %}checked{% endif %} required><span style="font-size:.9rem">{{ lbl }}</span></label>{% endfor %}
+  </div>
+
+  <label class="q">2. Where would Excel break? <span class="hint">(tick any)</span></label>
+  <div class="row" style="gap:6px 14px">
+    {% for code, lbl in reasons %}
+    <label style="flex:1 1 260px;font-weight:400;display:flex;gap:8px;align-items:flex-start;margin:2px 0">
+      <input type="checkbox" name="reasons" value="{{ code }}" {% if code in note.reasons %}checked{% endif %} style="margin-top:4px"> <span>{{ lbl }}</span>
+    </label>
+    {% endfor %}
+  </div>
+
+  <div class="row">
+    <div>
+      <label class="q" for="rows_scale">3. Rows per year, roughly <span class="hint">(a sheet holds 1,048,576)</span></label>
+      <select id="rows_scale" name="rows_scale">
+        <option value="">-</option>
+        {% for code, lbl in scales %}<option value="{{ code }}" {% if note.rows_scale == code %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="q" for="excel_tool">4. What would you build in Excel?</label>
+      <select id="excel_tool" name="excel_tool">
+        <option value="">-</option>
+        {% for code, lbl, py in excel_tools %}<option value="{{ code }}" {% if note.excel_tool == code %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <label class="q" for="excel_break">5. Comments</label>
+  <textarea id="excel_break" name="excel_break" maxlength="400" placeholder="e.g. one row per scan per student per session is 10,000+ rows a term, and the report has to run every Monday without me">{{ note.excel_break }}</textarea>
+  <button class="btn" type="submit" style="margin-top:10px">{{ 'Update' if saved else 'Save' }}</button>
+</form>
+{% endif %}
+
+<div class="toolbar" style="justify-content:space-between">
+  <style>.toolbar a.btn { color:#fff }</style>
+  {% if prev_id %}<a class="btn" href="{{ url_for('week02.question', qid=prev_id) }}">← previous</a>{% else %}<span></span>{% endif %}
+  <a href="{{ url_for('week02.index') }}">all questions</a>
+  {% if next_id %}<a class="btn" href="{{ url_for('week02.question', qid=next_id) }}">next →</a>{% else %}<a class="btn" href="{{ url_for('week02.mine') }}">Done → review</a>{% endif %}
+</div>
+{% endblock %}

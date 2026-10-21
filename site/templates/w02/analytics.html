@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 2 analytics{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .bar { display:flex; align-items:center; gap:8px; margin:3px 0; font-size:.88rem; }
+  .bar .lbl { width: 130px; color: var(--muted); }
+  .bar .trk { display:block; flex:1; background:#f1f1ee; border-radius:4px; height:14px; overflow:hidden; }
+  .bar .fill { display:block; height:100%; background: var(--c1); }
+  .bar .fill.out { background: var(--c2); }
+  .bar .n { width: 34px; text-align:right; font-variant-numeric: tabular-nums; }
+  .qnav a { display:inline-block; padding:2px 8px; margin:2px; border:1px solid var(--line); border-radius:6px; text-decoration:none; color:var(--ink); font-size:.85rem; }
+  .qnav a.hot { background: var(--ink); color:#fff; }
+  details summary { cursor:pointer; color: var(--muted); font-size:.9rem; }
+  .two { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .two { grid-template-columns: 1fr; } }
+  .ex { font-family: ui-monospace, monospace; font-size:.8rem; white-space:pre-wrap; word-break:break-word; }
+  .role-h { font-weight:700; text-transform:uppercase; font-size:.75rem; letter-spacing:.05em; margin:8px 0 4px; }
+  .role-h.in { color: var(--c1); } .role-h.out { color: var(--c2); }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>The shape of {{ s.n_students }} people's questions</h1><span class="course">{{ course }}</span></header>
+<div class="toolbar">
+  <span class="muted">{{ s.n }} variables · {{ s.vars_per_student }} per student · {{ s.role_overall.input }} inputs / {{ s.role_overall.output }} outputs · {{ s.n_notes }} "why Python" answers</span>
+  <span style="flex:1"></span>
+  <a href="{{ url_for('admin.analytics', slug=slug) }}">↻ refresh</a>
+  <a href="{{ url_for('admin.submissions', slug=slug) }}">submissions</a>
+  <a href="{{ url_for('admin.report', slug=slug) }}">report</a>
+  <a href="{{ url_for('admin.export_csv', slug=slug) }}">⬇ csv</a>
+  <a href="{{ url_for('admin.export_module', slug=slug, slug2=slug) }}" title="the class's answers as a list of dictionaries: import it live">⬇ class_w02.py</a>
+</div>
+
+{% if s.n == 0 and s.n_notes == 0 %}
+<div class="card"><p>No answers yet. Students go to <strong>/w02/</strong>. To rehearse, seed fake rows from the <a href="{{ url_for('admin.submissions', slug=slug) }}">submissions page</a>.</p></div>
+{% else %}
+{% set maxd = s.dtype_overall[0][1] if s.dtype_overall else 1 %}
+<div class="two">
+  <div class="card">
+    <h2 style="margin:0 0 6px">Which structures did the class reach for?</h2>
+    <p class="why muted" style="margin:0 0 8px">All questions, inputs and outputs together. Today's lecture: most rows should be <em>list of dictionaries</em>; most answers, <em>dictionary</em>.</p>
+    {% for d, c in s.dtype_overall %}
+    <div class="bar"><span class="lbl">{{ d }}</span><span class="trk"><span class="fill" style="width:{{ 100*c/maxd }}%"></span></span><span class="n">{{ c }}</span></div>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <h2 style="margin:0 0 6px">Coverage</h2>
+    <p class="why muted" style="margin:0 0 8px">Most-tagged questions: good candidates to project. Click a number to jump.</p>
+    <table>
+      <tr><th>Q</th><th>question</th><th class="num">students</th><th class="num">variables</th></tr>
+      {% for st in s.most_tagged %}<tr><td><a href="#q{{ st.q.id }}">Q{{ st.q.id }}</a></td><td>{{ st.q.short }}</td><td class="num">{{ st.students }}</td><td class="num">{{ st.n }}</td></tr>{% endfor %}
+    </table>
+    <p class="qnav" style="margin:10px 0 0">{% for st in s.per_q %}<a href="#q{{ st.q.id }}" class="{{ 'hot' if st.n else '' }}">Q{{ st.q.id }} · {{ st.n }}</a>{% endfor %}</p>
+  </div>
+</div>
+
+{% if s.n_notes %}
+{% set vmax = (s.verdict_overall|map(attribute=1)|max) or 1 %}
+{% set rmax = (s.reasons_overall|map(attribute=1)|max) if s.reasons_overall else 1 %}
+<div class="two">
+  <div class="card">
+    <h2 style="margin:0 0 6px">Excel or Python? · {{ s.n_notes }} answers</h2>
+    {% for lbl, c in s.verdict_overall %}
+    <div class="bar"><span class="lbl" style="width:190px">{{ lbl }}</span><span class="trk"><span class="fill {{ 'out' if 'Excel' in lbl else '' }}" style="width:{{ 100*c/vmax }}%"></span></span><span class="n">{{ c }}</span></div>
+    {% endfor %}
+    <h2 style="margin:14px 0 6px">Where Excel breaks</h2>
+    <p class="why muted" style="margin:0 0 6px">This is the class's rollup: <code>counts[reason] = counts.get(reason, 0) + 1</code>: run it live from <code>class_w02.py</code>.</p>
+    {% for lbl, c in s.reasons_overall %}
+    <div class="bar"><span class="lbl" style="width:260px">{{ lbl }}</span><span class="trk"><span class="fill" style="width:{{ 100*c/rmax }}%"></span></span><span class="n">{{ c }}</span></div>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <h2 style="margin:0 0 6px">Their Excel word → the Python word</h2>
+    <table><tr><th>would build in Excel</th><th>in this course</th><th class="num">n</th></tr>
+      {% for lbl, py, c in s.tools_overall %}<tr><td>{{ lbl }}</td><td><code>{{ py }}</code></td><td class="num">{{ c }}</td></tr>{% endfor %}
+    </table>
+    <h2 style="margin:14px 0 6px">Rows per year</h2>
+    {% set smax = (s.scale_overall|map(attribute=1)|max) or 1 %}
+    {% for lbl, c in s.scale_overall %}
+    <div class="bar"><span class="lbl">{{ lbl }}</span><span class="trk"><span class="fill" style="width:{{ 100*c/smax }}%"></span></span><span class="n">{{ c }}</span></div>
+    {% endfor %}
+    <p class="muted" style="margin:6px 0 0">A sheet holds 1,048,576 rows: the last two bars do not fit.</p>
+    {% if s.most_split %}
+    <h2 style="margin:14px 0 6px">Worth arguing about</h2>
+    <p class="why muted" style="margin:0 0 6px">Questions where the room disagrees most.</p>
+    <table><tr><th>Q</th><th>question</th><th>Excel · Python · either</th></tr>
+      {% for st in s.most_split %}<tr><td><a href="#q{{ st.q.id }}">Q{{ st.q.id }}</a></td><td>{{ st.q.short }}</td><td>{{ st.verdicts|map(attribute=1)|join(' · ') }}</td></tr>{% endfor %}
+    </table>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% for st in s.per_q %}
+<div class="card" id="q{{ st.q.id }}">
+  <div class="toolbar" style="margin:0 0 4px">
+    <h2 style="margin:0">Q{{ st.q.id }} · {{ st.q.short }}</h2>
+    <span class="pill">{{ st.q.kind }}</span>{% if st.q.demo %} <span class="pill">worked example</span>{% endif %}{% if not st.q.featured %} <span class="pill" title="not one of the 20 shown to students">hidden</span>{% endif %}
+    <span style="flex:1"></span>
+    <span class="muted">{{ st.students }} student{{ '' if st.students == 1 else 's' }} · {{ st.n }} variable{{ '' if st.n == 1 else 's' }}</span>
+  </div>
+  <p class="muted" style="margin:0 0 10px">“{{ st.q.text }}”</p>
+  {% if st.n %}
+  <div class="two">
+    {% for role in ["input", "output"] %}
+    {% set r = st[role] %}
+    <div>
+      <p class="role-h {{ 'in' if role == 'input' else 'out' }}">{{ role }}s · {{ r.n }}</p>
+      {% if r.n %}
+      {% set m = r.dtypes[0][1] %}
+      {% for d, c in r.dtypes %}
+      <div class="bar"><span class="lbl">{{ d }}</span><span class="trk"><span class="fill {{ 'out' if role == 'output' else '' }}" style="width:{{ 100*c/m }}%"></span></span><span class="n">{{ c }}</span></div>
+      {% endfor %}
+      <p style="margin:8px 0 2px" class="muted">Names the class used:</p>
+      <div class="chips">{% for nm, c in r.names %}<span>{{ nm }}{% if c > 1 %} ×{{ c }}{% endif %}</span>{% endfor %}</div>
+      {% if r.examples %}
+      <table style="margin-top:6px"><tr><th>variable</th><th>type</th><th>a class example</th></tr>
+        {% for nm, d, ex in r.examples %}<tr><td><code>{{ nm }}</code></td><td>{{ d }}</td><td class="ex">{{ ex }}</td></tr>{% endfor %}
+      </table>
+      {% endif %}
+      {% else %}<p class="muted">none yet</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}<p class="muted">Nobody has tagged this one yet.</p>{% endif %}
+  {% if st.n_notes %}
+  <p class="role-h" style="color:var(--c1);margin-top:12px">Excel or Python? · {{ st.n_notes }} answer{{ '' if st.n_notes == 1 else 's' }}{% if st.python_share != none %} · {{ st.python_share }}% lean Python{% endif %}</p>
+  <div class="chips">{% for lbl, c in st.verdicts %}<span>{{ lbl }}: {{ c }}</span>{% endfor %}</div>
+  {% if st.top_reasons %}<p class="muted" style="margin:6px 0 2px">Top reasons:</p><div class="chips">{% for lbl, c in st.top_reasons %}<span>{{ lbl }} ×{{ c }}</span>{% endfor %}</div>{% endif %}
+  {% if st.excel_tools %}<p class="muted" style="margin:6px 0 2px">In Excel they would build:</p><div class="chips">{% for lbl, py, c in st.excel_tools %}<span>{{ lbl }} → {{ py }} ×{{ c }}</span>{% endfor %}</div>{% endif %}
+  {% if st.why_python %}<ul class="qs" style="columns:2;margin-top:8px">{% for who, txt in st.why_python %}<li>{{ txt }} <span class="muted">- {{ who }}</span></li>{% endfor %}</ul>{% endif %}
+  {% if st.contexts %}<details style="margin-top:6px"><summary>How they framed the question ({{ st.contexts|length }})</summary><ul class="qs" style="margin-top:6px">{% for who, txt in st.contexts %}<li>{{ txt }} <span class="muted">- {{ who }}</span></li>{% endfor %}</ul></details>{% endif %}
+  {% endif %}
+  <details style="margin-top:10px"><summary>Reference key (instructor only: reveal for the debrief)</summary>
+    <div class="two" style="margin-top:8px">
+      {% for role in ["input", "output"] %}
+      <table><tr><th colspan="3" class="role-h {{ 'in' if role == 'input' else 'out' }}">{{ role }}s</th></tr>
+        <tr><th>variable</th><th>type</th><th>example</th></tr>
+        {% for rl, nm, d, ex in st.q.ref %}{% if rl == role %}<tr><td><code>{{ nm }}</code></td><td>{{ d }}</td><td class="ex">{{ ex }}</td></tr>{% endif %}{% endfor %}
+      </table>
+      {% endfor %}
+    </div>
+  </details>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

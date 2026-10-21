@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Your submission{% endblock %}
+{% block body %}
+<header><h1>Your submission</h1><span class="course">{{ course }}</span></header>
+<p class="muted">Saved.</p>
+<div class="card">
+  <table class="kv">
+    <tr><th>Name</th><td>{{ r.first_name }} {{ r.last_name }}{% if r.nickname %} ({{ r.nickname }}){% endif %}</td></tr>
+    <tr><th>BU email</th><td>{{ r.bu_email or '-' }}</td></tr>
+    <tr><th>Commute</th><td>{{ r.commute_mode }} · {{ r.commute_min }} min</td></tr>
+    <tr><th>Comfort (Excel · Python · SQL)</th><td>{{ r.comfort_excel }} · {{ r.comfort_python }} · {{ r.comfort_sql }}</td></tr>
+    <tr><th>Program</th><td>{{ r.program }}</td></tr>
+    <tr><th>Business question</th><td>{{ r.business_q }}</td></tr>
+  </table>
+  <p style="margin:18px 0 0"><a class="btn" href="{{ url_for('week01.form', edit=1) }}">Edit my answers</a></p>
+</div>
+<p class="muted" style="font-size:.85rem">Submitted {{ r.submitted_at.slice(0, 16).replace('T',' ') }} UTC · #{{ r.id }}</p>
+{% endblock %}

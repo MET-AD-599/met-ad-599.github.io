@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Sorting and NumPy{% endblock %}
+{% block head %}
+<style>
+  .qcard .part { font-size:.72rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color: var(--muted); }
+  .qcard .prompt { margin: 4px 0 6px; }
+  .qcard code, .card p code { background:#f1f1ee; padding:1px 5px; border-radius:4px; font-size:.9em; }
+  .qcard .docs { font-size:.88rem; margin: 2px 0 8px; }
+  .qcard .docs a { color: var(--c1); margin-right: 12px; }
+  .qcard textarea { font-family: ui-monospace, monospace; font-size:.85rem; min-height:110px; }
+  .qcard input[type=text] { font-family: ui-monospace, monospace; font-size:.9rem; }
+  h2.sec { font-size:1.1rem; margin: 26px 0 0; }
+  .copyrow { display:flex; justify-content:flex-end; margin-top:-4px; }
+  .copyrow button { background:none; border:1px solid var(--line); border-radius:6px; padding:3px 10px; font:inherit; font-size:.8rem; cursor:pointer; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Sorting and NumPy</h1><span class="course">{{ course }}</span></header>
+{% if saved %}<p class="flash" id="saved">Saved{% if last %} at {{ last.slice(11, 16) }} UTC{% endif %}. You can keep editing.</p>{% endif %}
+
+<form method="post" action="{{ url_for('week06.answers') }}">
+
+<h2 class="sec">{{ part1 }}</h2>
+<div class="card">
+  <p style="margin:0 0 6px">Your inputs. Paste them at the top of your script:</p>
+  <pre id="inputs">{{ s.inputs_code }}</pre>
+  <div class="copyrow"><button type="button" onclick="cp('inputs', this)">Copy</button></div>
+  <p class="muted" style="margin:6px 0 0">Each question names a function and links its documentation. Read the docs, run it, and type exactly what you get.</p>
+</div>
+{% for q in part1_qs %}{% set i = loop.index %}{% set a = mine.get(i) %}
+<div class="card qcard">
+  <div class="part">Question {{ i }} · {{ q.title }}</div>
+  <div class="prompt">{{ q.prompt|md6 }}</div>
+  <div class="docs">Documentation: {% for label, url in q.docs %}<a href="{{ url }}" target="_blank" rel="noopener">{{ label }} ↗</a>{% endfor %}</div>
+  <label class="q" for="a{{ i }}" style="margin-top:6px">Your result</label>
+  <input type="text" id="a{{ i }}" name="a{{ i }}" value="{{ a.answer if a else '' }}" autocomplete="off" spellcheck="false">
+  <details{% if a and a.code %} open{% endif %}><summary class="muted" style="cursor:pointer;font-size:.85rem;margin-top:8px">Paste your code (optional)</summary>
+    <textarea name="c{{ i }}" spellcheck="false">{{ a.code if a else '' }}</textarea>
+  </details>
+</div>
+{% endfor %}
+
+<h2 class="sec">{{ part2 }} · {{ s.business.name }}</h2>
+<div class="card">
+  <p style="margin:0 0 6px">You run <strong>{{ s.business.name }}</strong>. Here are the last 14 days of {{ s.business.unit }}, one row per day (day 1 first), one column per item:</p>
+  <pre id="biz">{{ s.business_code }}</pre>
+  <div class="copyrow"><button type="button" onclick="cp('biz', this)">Copy</button></div>
+  <p class="muted" style="margin:6px 0 0">Answer each question with NumPy, without a <code>for</code> loop. Paste the <strong>exact code you ran</strong> and the <strong>answer it printed</strong>. Your code is read, so it has to do the task, not just print a number.</p>
+</div>
+{% for q in part2_qs %}{% set i = loop.index + part1_qs|length %}{% set a = mine.get(i) %}
+<div class="card qcard">
+  <div class="part">Question {{ i }} · {{ q.title }}</div>
+  <div class="prompt">{{ q.prompt|md6 }}</div>
+  <label class="q" for="c{{ i }}" style="margin-top:6px">Your code</label>
+  <textarea id="c{{ i }}" name="c{{ i }}" spellcheck="false" placeholder="import numpy as np&#10;...">{{ a.code if a else '' }}</textarea>
+  <label class="q" for="a{{ i }}">The answer your code printed</label>
+  <input type="text" id="a{{ i }}" name="a{{ i }}" value="{{ a.answer if a else '' }}" autocomplete="off" spellcheck="false">
+</div>
+{% endfor %}
+
+<button class="primary" type="submit">Save my answers</button>
+</form>
+<script>
+function cp(id, btn) {
+  var t = document.getElementById(id).innerText;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () {
+    btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy"; }, 1500);
+  }, function () { btn.textContent = "Select and copy"; });
+}
+</script>
+{% endblock %}

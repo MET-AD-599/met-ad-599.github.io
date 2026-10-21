@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 1 report{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block body %}
+<header><h1>Week 1 · Intro survey: summary report</h1><span class="course">{{ course }}</span></header>
+<div class="toolbar noprint">
+  <a href="{{ url_for('admin.analytics', slug=slug) }}">analytics</a>
+  <a href="{{ url_for('admin.submissions', slug=slug) }}">submissions</a>
+  <a href="{{ url_for('admin.export_csv', slug=slug) }}">⬇ csv</a>
+  <a href="#" onclick="window.print();return false">🖨 print / save as PDF</a>
+</div>
+{% if s.n == 0 %}<div class="card"><p>No submissions.</p></div>{% else %}
+<div class="card">
+  <h2>Headline numbers</h2>
+  <div class="tiles">
+    <div class="tile"><div class="v">{{ s.n }}</div><div class="k">submissions</div></div>
+    <div class="tile"><div class="v">{{ s.commute_stats.mean }}</div><div class="k">mean commute (min)</div></div>
+    <div class="tile"><div class="v">{{ s.comfort_means.Excel }}</div><div class="k">Excel comfort (1–5)</div></div>
+    <div class="tile"><div class="v">{{ s.comfort_means.Python }}</div><div class="k">Python comfort</div></div>
+    <div class="tile"><div class="v">{{ s.comfort_means.SQL }}</div><div class="k">SQL comfort</div></div>
+    <div class="tile"><div class="v">{{ s.commute.max }}</div><div class="k">longest commute (min)</div></div>
+  </div>
+</div>
+<div class="grid">
+  <div class="card"><h2>Commute mode</h2><table>
+    <tr><th>mode</th><th class="num">students</th><th class="num">share</th></tr>
+    {% for m, c in s.mode_counts.items() %}<tr><td>{{ m }}</td><td class="num">{{ c }}</td><td class="num">{{ "%.0f"|format(100*c/s.n) }}%</td></tr>{% endfor %}
+  </table></div>
+  <div class="card"><h2>Comfort distribution (count at each level 1–5)</h2><table>
+    <tr><th>tool</th>{% for i in range(1,6) %}<th class="num">{{ i }}</th>{% endfor %}<th class="num">mean</th></tr>
+    {% for t, d in s.comfort_dist.items() %}<tr><td>{{ t }}</td>{% for c in d %}<td class="num">{{ c }}</td>{% endfor %}<td class="num">{{ s.comfort_means[t] }}</td></tr>{% endfor %}
+  </table></div>
+  <div class="card"><h2>By program</h2><table>
+    <tr><th>program</th><th class="num">students</th><th class="num">avg commute</th><th class="num">Excel</th><th class="num">Python</th><th class="num">SQL</th></tr>
+    {% for r in s.program_rows %}<tr><td>{{ r.program }}</td><td class="num">{{ r.students }}</td><td class="num">{{ r.avg_commute|int }}</td><td class="num">{{ r.avg_excel }}</td><td class="num">{{ r.avg_python }}</td><td class="num">{{ r.avg_sql }}</td></tr>{% endfor %}
+  </table></div>
+  <div class="card"><h2>Excel comfort vs SQL comfort</h2>
+    {% if s.line %}<p>Fitted line: SQL ≈ {{ "%.2f"|format(s.line[1]) }} {{ "+" if s.line[0] >= 0 else "−" }} {{ "%.2f"|format(s.line[0]|abs) }} × Excel.</p>{% else %}<p class="muted">Not enough data for a fit.</p>{% endif %}
+    <p class="muted">BU emails given: {{ s.emails.given }} of {{ s.n }} ({{ s.emails.bu }} valid @bu.edu after cleaning).</p>
+  </div>
+</div>
+<div class="card"><h2>Business questions (Q9)</h2>
+  <ol>{% for q in s.questions %}<li>{{ q }}</li>{% endfor %}</ol>
+</div>
+<div class="card"><h2>All submissions</h2>
+  <div style="overflow-x:auto"><table>
+    <tr><th>#</th><th>time (UTC)</th><th>name</th><th>email</th><th>commute</th><th class="num">min</th><th class="num">xl</th><th class="num">py</th><th class="num">sql</th><th>program</th><th>question</th></tr>
+    {% for r in rows %}<tr><td>{{ r.id }}</td><td>{{ r.submitted_at.slice(11, 16) }}</td><td>{{ r.first_name }} {{ r.last_name }}{% if r.nickname %} ({{ r.nickname }}){% endif %}</td><td>{{ r.bu_email }}</td><td>{{ r.commute_mode }}</td><td class="num">{{ r.commute_min }}</td><td class="num">{{ r.comfort_excel }}</td><td class="num">{{ r.comfort_python }}</td><td class="num">{{ r.comfort_sql }}</td><td>{{ r.program }}</td><td>{{ r.business_q }}</td></tr>{% endfor %}
+  </table></div>
+</div>
+{% endif %}
+{% endblock %}

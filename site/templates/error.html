@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}AD 599{% endblock %}
+{% block body %}
+<header><h1>Something went wrong</h1><span class="course">{{ course }}</span></header>
+<div class="card"><p>{{ message }}</p><p><a href="{{ url_for('index') }}">Back to the start page</a></p></div>
+{% endblock %}

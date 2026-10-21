@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Team algorithms · analytics{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .team h2 { margin: 0 0 8px; }
+  .ans { display:grid; grid-template-columns: 140px 1fr 1.6fr 1fr; gap: 10px; border-top: 1px solid var(--line); padding: 8px 0; font-size: .86rem; }
+  .ans pre { white-space: pre-wrap; margin: 0; font-family: ui-monospace, monospace; font-size: .82rem; }
+  .ans.head { font-weight: 700; color: var(--muted); border-top: 0; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Team algorithms · answers by team</h1><span class="course">{{ course }}</span></header>
+<div class="toolbar">
+  <span class="muted">{{ s.n_students }} students · {{ s.n_teams }} teams · {{ s.n_complete }} with all three answers</span>
+  <span style="flex:1"></span>
+  <a href="{{ url_for('admin.analytics', slug=slug) }}">↻ refresh</a>
+  <a href="{{ url_for('admin.submissions', slug=slug) }}">submissions</a>
+  <a href="{{ url_for('admin.export_csv', slug=slug) }}">⬇ csv</a>
+</div>
+{% if s.n_students == 0 %}
+<div class="card"><p>Nobody has saved on <strong>/{{ slug }}/</strong> yet.</p></div>
+{% endif %}
+{% for team, members in s.teams %}
+<div class="card team">
+  <h2>Team {{ team }} <span class="muted" style="font-size:.9rem;font-weight:400">· {{ members|length }} student{{ '' if members|length == 1 else 's' }}</span></h2>
+  <div class="ans head"><div>Student</div><div>1 · Inputs</div><div>2 · Pseudocode</div><div>3 · Improve</div></div>
+  {% for m in members %}
+  <div class="ans"><div>{{ m.nickname }}<br><span class="muted">{{ m.submitted_at.slice(11, 16) }} UTC</span></div>
+    <div><pre>{{ m.inputs }}</pre></div><div><pre>{{ m.steps }}</pre></div><div><pre>{{ m.improve }}</pre></div></div>
+  {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

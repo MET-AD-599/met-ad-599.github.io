@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}AD 599{% endblock %}
+{% block body %}
+<header><h1>In-class pages</h1><span class="course">{{ course }}</span></header>
+{% if student %}<p class="muted">Signed in as <strong>{{ student.first_name }} {{ student.last_name }}</strong> ({{ student.username }}@bu.edu). Open the page your instructor puts on the screen.</p>
+{% else %}<p class="muted"><a href="{{ url_for('auth.login') }}">Sign in</a> with your BU username to open a page.</p>{% endif %}
+{% for slug, title, open in items %}
+<a class="lect" href="{{ url_for('index') }}{{ slug }}/">{{ title }}<small>/{{ slug }}/{% if not open %} · closed{% endif %}</small></a>
+{% endfor %}
+{% endblock %}

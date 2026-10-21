@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 2{% endblock %}
+{% block body %}
+<header><h1>Week 2 · The shape of the question</h1><span class="course">{{ course }}</span></header>
+<div class="card">
+  <p style="margin:0 0 6px">Twenty of the analytics questions <strong>you</strong> asked last week. The first one, <em>attendance analytics</em>, is the <strong>worked example</strong> we do together. Then <strong>pick any one</strong> (more if you like) and name the
+  <strong>variables</strong> it needs, the <em>inputs</em> that come in and the <em>outputs</em> you would hand back, each with a
+  <strong>data type or structure</strong> and an <strong>example value</strong>. Be granular: more variables is better.</p>
+  <p style="margin:0 0 6px">Then the discussion part: <strong>Excel or Python for this one: and where would Excel break?</strong>
+  Tick the reasons, guess the rows per year, name what you would build in Excel, and write one sentence.</p>
+  <div class="tiles" style="margin-top:12px">
+    <div class="tile"><div class="v">{{ total }}</div><div class="k">variables you added</div></div>
+    <div class="tile"><div class="v">{{ done }}<span class="muted" style="font-size:1rem">/{{ n_open }}</span></div><div class="k">questions answered</div></div>
+  </div>
+</div>
+{% for q in questions %}
+<a class="lect" href="{{ url_for('week02.question', qid=q.id) }}"{% if q.demo %} style="border-left:4px solid var(--c1)"{% endif %}>
+  {{ q.text }}
+  <small>{% if q.demo %}<span class="pill">worked example: read only</span>{% elif per_q[q.id] %}<span class="pill ok">{{ per_q[q.id] }} variable{{ '' if per_q[q.id] == 1 else 's' }}</span>{% else %}not started{% endif %}</small>
+</a>
+{% endfor %}
+<p><a class="btn" href="{{ url_for('week02.mine') }}">See everything I added</a></p>
+{% endblock %}

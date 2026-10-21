@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · String questions{% endblock %}
+{% block head %}
+<style>
+  .qcard .skill { font-size:.72rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color: var(--muted); }
+  .qcard .prompt { margin: 4px 0 8px; }
+  .qcard .prompt code { background:#f1f1ee; padding:1px 5px; border-radius:4px; font-size:.9em; }
+  .qcard textarea { font-family: ui-monospace, monospace; font-size:.85rem; min-height:56px; }
+  .qcard details summary { cursor:pointer; color: var(--muted); font-size:.85rem; margin-top:8px; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Your ten string questions</h1><span class="course">{{ course }}</span></header>
+<div class="card">
+  <p style="margin:0 0 6px">These ten are <strong>yours</strong>: nobody else in the room has the same set. Work in your own notebook. Download the data, put it next to your notebook, and start with:</p>
+  <pre>from class_data import rows, questions, variables</pre>
+  <p style="margin:6px 0 0"><a class="btn" href="{{ url_for('week03.class_data') }}">⬇ class_data.py</a>
+  <span class="muted" style="margin-left:8px">Type the <strong>result</strong> your code prints, not the code. Save as often as you like.</span></p>
+</div>
+{% if saved %}<p class="flash" id="saved">Saved{% if last %} at {{ last.slice(11, 16) }} UTC{% endif %}. You can keep editing.</p>{% endif %}
+<form method="post" action="{{ url_for('week03.answers') }}">
+{% for q in qs %}{% set i = loop.index %}{% set a = mine.get(i) %}
+<div class="card qcard">
+  <div class="skill">Question {{ i }} · {{ q.skill }}</div>
+  <div class="prompt">{{ q.prompt|md }}</div>
+  <label class="q" for="a{{ i }}" style="margin-top:10px">Your answer</label>
+  <input type="text" id="a{{ i }}" name="a{{ i }}" value="{{ a.answer if a else '' }}" autocomplete="off">
+  <details{% if a and a.code %} open{% endif %}><summary>Paste your code (optional)</summary>
+    <textarea name="c{{ i }}" spellcheck="false">{{ a.code if a else '' }}</textarea>
+  </details>
+</div>
+{% endfor %}
+<button class="primary" type="submit">Save my answers</button>
+</form>
+{% endblock %}

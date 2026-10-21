@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 2 · Mine{% endblock %}
+{% block body %}
+<p class="topnav"><a href="{{ url_for('week02.index') }}">← all questions</a></p>
+<header><h1>Everything you added</h1><span class="course">{{ course }}</span></header>
+<p class="muted">{{ total }} variable{{ '' if total == 1 else 's' }} across {{ n_q }} question{{ '' if n_q == 1 else 's' }}. Only you can see this page.</p>
+{% for q in questions_with %}
+<div class="card">
+  <p style="margin:0 0 8px"><strong>{{ q.text }}</strong> <a href="{{ url_for('week02.question', qid=q.id) }}" style="font-size:.85rem">edit</a></p>
+  <table>
+    <tr><th>in/out</th><th>variable</th><th>type</th><th>example</th></tr>
+    {% for r in by_q[q.id] %}<tr><td>{{ r.role }}</td><td><code>{{ r.var_name }}</code></td><td>{{ r.dtype }}</td><td><code style="white-space:pre-wrap">{{ r.example }}</code></td></tr>{% endfor %}
+  </table>
+</div>
+{% else %}
+<div class="card"><p>Nothing yet: <a href="{{ url_for('week02.index') }}">pick a question</a>.</p></div>
+{% endfor %}
+{% endblock %}

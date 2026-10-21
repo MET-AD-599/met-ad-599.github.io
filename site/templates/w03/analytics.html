@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · String questions · analytics{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .bar { display:flex; align-items:center; gap:8px; margin:3px 0; font-size:.88rem; }
+  .bar .lbl { width: 230px; color: var(--muted); }
+  .bar .trk { display:block; flex:1; background:#f1f1ee; border-radius:4px; height:14px; overflow:hidden; }
+  .bar .fill { display:block; height:100%; background: var(--c3); }
+  .bar .n { width: 70px; text-align:right; font-variant-numeric: tabular-nums; }
+  .ok { color:#1f7a4a; font-weight:700; } .no { color: var(--accent); font-weight:700; }
+  td.ans { font-family: ui-monospace, monospace; font-size:.78rem; white-space:nowrap; max-width:140px; overflow:hidden; text-overflow:ellipsis; }
+  .slips span { display:inline-block; background:#fbeaea; border-radius:6px; padding:1px 8px; margin:2px 4px 2px 0; font-size:.85rem; }
+  .detail td { font-size:.85rem; vertical-align:top; }
+  .detail code { background:#f1f1ee; padding:0 4px; border-radius:4px; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Ten string questions · one set per student</h1><span class="course">{{ course }}</span></header>
+<div class="toolbar">
+  <span class="muted">{{ s.n_students }} students · {{ s.n_unique }} unique sets · {{ s.n_answering }} answering · {{ s.n_answers }} answers · {{ s.n_correct }} right</span>
+  <span style="flex:1"></span>
+  <a href="{{ url_for('admin.analytics', slug=slug) }}">↻ refresh</a>
+  <a href="{{ url_for('admin.submissions', slug=slug) }}">submissions</a>
+  <a href="{{ url_for('admin.export_csv', slug=slug) }}">⬇ csv</a>
+</div>
+
+{% if s.n_students == 0 %}
+<div class="card"><p>Nobody has opened <strong>/{{ slug }}/</strong> yet. To rehearse, seed fake students from the <a href="{{ url_for('admin.submissions', slug=slug) }}">submissions page</a>.</p></div>
+{% else %}
+<div class="card">
+  <h2 style="margin:0 0 6px">Right answers by skill</h2>
+  <p class="why muted" style="margin:0 0 8px">Everyone gets one question per skill, with different parameters. The red tags name the typical slip each wrong answer matches: that is the debrief.</p>
+  <table>
+    <tr><th>#</th><th>skill</th><th style="width:36%">right</th><th>typical slips</th><th class="num">other wrong</th></tr>
+    {% for b in s.by_skill %}
+    <tr><td>{{ b.q_no }}</td><td>{{ b.skill }}</td>
+      <td><div class="bar" style="margin:0"><span class="trk"><span class="fill" style="width:{{ (100*b.correct/b.n) if b.n else 0 }}%"></span></span><span class="n">{{ b.correct }}/{{ b.n }}</span></div></td>
+      <td class="slips">{% for m, c in b.mistakes %}<span>{{ m }} ×{{ c }}</span>{% endfor %}</td>
+      <td class="num">{{ b.other }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card" style="overflow-x:auto" id="students">
+  <h2 style="margin:0 0 6px">Students</h2>
+  <p class="why muted" style="margin:0 0 8px">Click a name to see that student's ten questions with the keys.</p>
+  <table>
+    <tr><th>student</th>{% for i in range(1, s.n_q + 1) %}<th>Q{{ i }}</th>{% endfor %}<th class="num">right</th></tr>
+    {% for p in s.progress %}{% set aa = s.per_student.get(p.student_id, {}) %}
+    <tr><td><a href="#d{{ p.student_id }}" onclick="document.getElementById('d{{ p.student_id }}').open = true">{{ p.nickname }}</a></td>
+      {% for i in range(1, s.n_q + 1) %}{% set a = aa.get(i) %}<td class="ans" title="{{ a.answer if a else '' }}">{% if a and a.answer %}<span class="{{ 'ok' if a.correct else 'no' }}">{{ '✓' if a.correct else '✗' }}</span> {{ a.answer }}{% else %}<span class="muted">·</span>{% endif %}</td>{% endfor %}
+      <td class="num">{{ p.n_correct }}/{{ s.n_q }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h2 style="margin:0 0 6px">Each student's questions</h2>
+  {% for p in s.progress %}{% set aa = s.per_student.get(p.student_id, {}) %}
+  <details id="d{{ p.student_id }}"><summary>{{ p.nickname }} · {{ p.n_correct }}/{{ s.n_q }}</summary>
+    <table class="detail">
+      <tr><th>#</th><th>question</th><th>key</th><th>answer</th><th>slip</th></tr>
+      {% for q in s.details[p.student_id] %}{% set a = aa.get(loop.index) %}
+      <tr><td>{{ loop.index }}</td><td>{{ q.prompt|md }}</td><td><code>{{ q.key }}</code></td>
+        <td>{% if a and a.answer %}<span class="{{ 'ok' if a.correct else 'no' }}">{{ '✓' if a.correct else '✗' }}</span> <code>{{ a.answer }}</code>{% else %}<span class="muted">·</span>{% endif %}
+          {% if a and a.code %}<details><summary class="muted">code</summary><pre>{{ a.code }}</pre></details>{% endif %}</td>
+        <td class="muted">{{ a.mistake if a else '' }}</td></tr>
+      {% endfor %}
+    </table>
+  </details>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

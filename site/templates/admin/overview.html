@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Admin{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block body %}
+<header><h1>Instructor dashboard</h1><span class="course">{{ course }}</span></header>
+<div class="card"><table>
+  <tr><th>lecture</th><th class="num">submissions</th><th>last submission (UTC)</th><th>status</th><th></th></tr>
+  {% for it in items %}
+  <tr>
+    <td><strong>{{ it.title }}</strong><br><span class="muted">/{{ it.slug }}/</span></td>
+    <td class="num">{{ it.n }}</td>
+    <td>{{ (it.last or '-').slice(0, 16).replace('T',' ') }}</td>
+    <td>{% if it.open %}<span class="pill ok">open</span>{% else %}<span class="pill">closed</span>{% endif %}</td>
+    <td class="actions">
+      <a href="{{ url_for('admin.submissions', slug=it.slug) }}">submissions</a>
+      <a href="{{ url_for('admin.analytics', slug=it.slug) }}">analytics</a>
+      <a href="{{ url_for('admin.report', slug=it.slug) }}">report</a>
+      <a href="{{ url_for('admin.export_csv', slug=it.slug) }}">csv</a>
+      <form method="post" action="{{ url_for('admin.toggle', slug=it.slug) }}" style="display:inline"><button class="link">{{ 'close' if it.open else 'open' }}</button></form>
+    </td>
+  </tr>
+  {% endfor %}
+</table></div>
+<p><a class="btn" href="{{ url_for('admin.students') }}">Student roster</a></p>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 2 report{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block body %}
+<header><h1>Week 2 · The shape of the question: class answers</h1><span class="course">{{ course }}</span></header>
+<div class="toolbar noprint">
+  <a href="{{ url_for('admin.analytics', slug=slug) }}">analytics</a>
+  <a href="{{ url_for('admin.submissions', slug=slug) }}">submissions</a>
+  <a href="{{ url_for('admin.export_csv', slug=slug) }}">⬇ csv</a>
+  <a href="#" onclick="window.print();return false">🖨 print / save as PDF</a>
+</div>
+{% if s.n == 0 %}<div class="card"><p>No answers.</p></div>{% else %}
+<div class="card"><div class="tiles">
+  <div class="tile"><div class="v">{{ s.n_students }}</div><div class="k">students</div></div>
+  <div class="tile"><div class="v">{{ s.n }}</div><div class="k">variables</div></div>
+  <div class="tile"><div class="v">{{ s.role_overall.input }}</div><div class="k">inputs</div></div>
+  <div class="tile"><div class="v">{{ s.role_overall.output }}</div><div class="k">outputs</div></div>
+  <div class="tile"><div class="v">{{ s.dtype_overall[0][0] if s.dtype_overall else '-' }}</div><div class="k">most used structure</div></div>
+</div></div>
+{% for st in s.per_q %}{% if st.n %}
+<div class="card">
+  <h2 style="margin:0">Q{{ st.q.id }} · {{ st.q.text }}</h2>
+  <p class="muted" style="margin:2px 0 8px">{{ st.students }} students · {{ st.n }} variables</p>
+  <table>
+    <tr><th>student</th><th>in/out</th><th>variable</th><th>type</th><th>example</th><th>why</th></tr>
+    {% for r in rows %}{% if r.question_id == st.q.id %}
+    <tr><td>{{ r.nickname }}</td><td>{{ r.role }}</td><td><code>{{ r.var_name }}</code></td><td>{{ r.dtype }}</td><td><code style="white-space:pre-wrap;font-size:.8rem">{{ r.example }}</code></td><td class="muted">{{ r.note }}</td></tr>
+    {% endif %}{% endfor %}
+  </table>
+</div>
+{% endif %}{% endfor %}
+{% endif %}
+{% endblock %}

@@ -10,6 +10,15 @@
   .teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 10px; }
   .teams div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: .9rem; }
   .low { color: var(--accent); }
+  .qs { width: 100%; }
+  .qs td, .qs th { vertical-align: middle; }
+  .qs form { display: inline; margin: 0; }
+  .qs .sechead td { background: var(--soft, #f3f4f6); padding-top: 10px; }
+  .qs tr.off td:nth-child(2) { color: var(--muted); }
+  .qs .qid { display: inline-block; min-width: 2.6em; font-weight: 700; }
+  .qs .tgl { min-width: 7.5em; }
+  .qs .tgl.live { background: #16a34a; border-color: #16a34a; color: #fff; }
+  .right { text-align: right; white-space: nowrap; }
 </style>
 {% endblock %}
 {% block body %}
@@ -33,22 +42,31 @@
 
 <div class="card">
   <div class="ctl" style="margin-bottom:8px">
-    <strong>Checkpoints</strong>
-    <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="action" value="next"><button class="btn">Open the next section</button></form>
-    <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="action" value="all"><button class="link">open all</button></form>
-    <form method="post" action="{{ url_for('admin.w07_section') }}" onsubmit="return confirm('Hide every section from students? Answers are kept.')"><input type="hidden" name="action" value="none"><button class="link">hide all</button></form>
+    <strong>Questions</strong>
+    <span class="muted">{{ n_items_open }} of {{ n_items }} released</span>
+    <span style="flex:1"></span>
+    <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="action" value="all"><button class="link">release all</button></form>
+    <form method="post" action="{{ url_for('admin.w07_section') }}" onsubmit="return confirm('Hide every question from students? Answers are kept.')"><input type="hidden" name="action" value="none"><button class="link">hide all</button></form>
   </div>
-  <table class="secs">
-    <tr><th>section</th><th>status</th><th class="num">items</th><th class="num">students answering</th><th class="num">answers</th><th></th></tr>
-    {% for s in sections %}
-    <tr>
-      <td><strong>{{ s.id }}</strong> · {{ s.title }}</td>
-      <td>{% if s.open %}<span class="pill ok">open</span>{% else %}<span class="pill">hidden</span>{% endif %}</td>
-      <td class="num">{{ s.n_items }}</td><td class="num">{{ s.n_students }}</td><td class="num">{{ s.n_answers }}</td>
+  <table class="qs">
+    <tr><th></th><th>question</th><th>type</th><th class="num">answers</th><th></th></tr>
+    {% for q in questions %}
+    {% if q.first_in_section %}
+    <tr class="sechead"><td colspan="4"><strong>Checkpoint {{ q.section }}</strong> · {{ q.section_title }}</td>
+      <td class="right">
+        <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="sec" value="{{ q.section }}"><input type="hidden" name="action" value="open"><button class="link">release all {{ q.section }}</button></form>
+        · <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="sec" value="{{ q.section }}"><input type="hidden" name="action" value="close"><button class="link">hide all {{ q.section }}</button></form>
+      </td></tr>
+    {% endif %}
+    <tr class="{{ 'on' if q.open else 'off' }}">
       <td>
-        <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="sec" value="{{ s.id }}"><input type="hidden" name="action" value="{{ 'close' if s.open else 'open' }}"><button class="link">{{ 'hide' if s.open else 'open' }}</button></form>
-        · <a href="{{ url_for('admin.w07_live') }}#s-{{ s.id }}">live</a>
+        <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="item" value="{{ q.id }}"><input type="hidden" name="action" value="{{ 'close' if q.open else 'open' }}">
+          <button class="btn tgl {{ 'live' if q.open else '' }}">{{ 'Live · hide' if q.open else 'Release' }}</button></form>
       </td>
+      <td><span class="qid">{{ q.id }}</span> {{ q.prompt }}</td>
+      <td class="muted">{{ 'poll' if q.kind == 'poll' else 'check' }}{% if q.lo %} · {{ q.lo }}{% endif %}</td>
+      <td class="num">{{ q.n_answers }}</td>
+      <td class="right"><a href="{{ url_for('admin.w07_live', only=q.id) }}">live</a></td>
     </tr>
     {% endfor %}
   </table>
@@ -73,7 +91,7 @@
 </div>
 
 <div class="card" style="overflow-x:auto">
-  <strong>Who has answered</strong> <span class="muted">answered counts only the {{ n_items_open }} items in open sections</span>
+  <strong>Who has answered</strong> <span class="muted">answered counts only the {{ n_items_open }} released questions</span>
   <table style="margin-top:8px">
     <tr><th>student</th><th>username</th><th class="num">team</th><th class="num">answered</th><th class="num">checks right</th><th>last answer (UTC)</th></tr>
     {% for p in people %}

@@ -309,17 +309,20 @@ function w07(d, q = {}) {
   const by = new Map();
   for (const a of d.answers) { if (!by.has(a.item_id)) by.set(a.item_id, []); by.get(a.item_id).push(a); }
   const only = q.only || "";
-  const shown = secsAll.filter((s) => opened.includes(s.id) || q.all);
-  const sections = shown.map((s) => ({ id: s.id, title: s.title,
-    items: s.items.filter((it) => !only || it.id === only).map((it) => w07Item(it, by.get(it.id) || [], key[it.id])) }))
+  const items = d.opened_items || [];                              // released questions
+  const isOn = (it) => q.all || only ? true : items.includes(it.id);
+  const sections = secsAll.map((s) => ({ id: s.id, title: s.title,
+    items: s.items.filter((it) => (!only || it.id === only) && isOn(it)).map((it) => w07Item(it, by.get(it.id) || [], key[it.id])) }))
     .filter((s) => s.items.length).reverse();                     // newest section first: that is what we are discussing
-  const next = secsAll.find((s) => !opened.includes(s.id));
+  const allItems = secsAll.flatMap((s) => s.items.map((it) => ({ id: it.id, prompt: it.prompt })));
+  const nextItem = allItems.find((it) => !items.includes(it.id));
+  const next = nextItem ? { id: nextItem.id, title: nextItem.prompt.length > 60 ? nextItem.prompt.slice(0, 57) + "..." : nextItem.prompt } : null;
   return {
     sections, only, next: next ? { id: next.id, title: next.title } : null,
     n_students: new Set(d.answers.filter((a) => a.student_id > 0).map((a) => a.student_id)).size,
     n_rehearsal: new Set(d.answers.filter((a) => a.student_id < 0).map((a) => a.student_id)).size,
     n_answers: d.answers.length, n_roster: d.n_roster, n_teams: d.n_teams, released: d.released,
-    opened, n_sections: secsAll.length,
+    opened, n_sections: secsAll.length, n_items_open: items.length, n_items: allItems.length,
   };
 }
 

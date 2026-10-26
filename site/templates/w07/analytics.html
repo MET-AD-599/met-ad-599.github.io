@@ -46,12 +46,12 @@
 {% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash noprint">{{ m }}</p>{% endfor %}
 <div class="live-top noprint">
   {% if open %}<span class="pill ok">open</span>{% else %}<span class="pill">closed</span>{% endif %}
-  <span class="count">{{ s.n_students }} of {{ s.n_roster }} students answering{% if s.n_rehearsal %} · {{ s.n_rehearsal }} rehearsal{% endif %} · {{ s.n_answers }} answers · sections open {{ s.opened|length }}/{{ s.n_sections }}{% if s.released %} · teams released{% endif %}</span>
+  <span class="count">{{ s.n_students }} of {{ s.n_roster }} students answering{% if s.n_rehearsal %} · {{ s.n_rehearsal }} rehearsal{% endif %} · {{ s.n_answers }} answers · questions released {{ s.n_items_open }}/{{ s.n_items }}{% if s.released %} · teams released{% endif %}</span>
   <span style="flex:1"></span>
   {% if s.next %}
   <form method="post" action="{{ url_for('admin.w07_section') }}">
     <input type="hidden" name="action" value="next"><input type="hidden" name="_back" value="/admin/w07/analytics">
-    <button class="btn">Open {{ s.next.id }} · {{ s.next.title }}</button>
+    <button class="btn">Release {{ s.next.id }} · {{ s.next.title }}</button>
   </form>
   {% endif %}
   {% if s.only %}<a href="{{ url_for('admin.w07_live') }}">show all</a>{% endif %}
@@ -60,7 +60,7 @@
 </div>
 
 {% if s.sections|length == 0 %}
-<div class="card"><p class="empty" style="margin:0">No section is open yet. {% if s.next %}Use <strong>Open {{ s.next.id }}</strong> above when you reach the first checkpoint.{% endif %}</p></div>
+<div class="card"><p class="empty" style="margin:0">No question is released yet. {% if s.next %}Use <strong>Release {{ s.next.id }}</strong> above, or the <a href="{{ url_for('admin.w07_control') }}">control</a> page.{% endif %}</p></div>
 {% endif %}
 
 {% for sec in s.sections %}

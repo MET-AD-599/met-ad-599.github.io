@@ -76,7 +76,7 @@
 {% for s in secs %}
 <h2 class="sec" id="sec-{{ s.id }}">Checkpoint {{ s.id }} · {{ s.title }} <span class="n">{{ s.n_done }}/{{ s.items|length }}</span>{% if saved == s.id %}<span class="savednote">✓ Saved</span>{% endif %}</h2>
 {% for it in s.items %}
-<div class="card item">
+<div class="card item" id="it-{{ it.id }}">
   <div class="kind {{ it.kind }}">{{ 'Poll' if it.kind == 'poll' else 'Check' }}</div>
   <div class="prompt">{{ it.prompt|md }}</div>
   {% if it.type == 'single' %}
@@ -101,8 +101,9 @@
 </form>
 {% endif %}
 
-<div id="newbanner"><span>A new checkpoint is open.</span><button type="button" id="newbtn">Save my answers and show it</button></div>
-<div id="w07state" data-state="{{ opened|join(',') }}|{{ released }}|{{ open }}" data-last="{{ opened|last if opened|length else '' }}" hidden></div>
+<div id="newbanner"><span>A new question is open.</span><button type="button" id="newbtn">Save my answers and show it</button></div>
+{% set lastsec = secs|last if secs|length else none %}
+<div id="w07state" data-state="{{ opened|join(',') }}|{{ released }}|{{ open }}" data-lastsec="{{ lastsec.id if lastsec else '' }}" hidden></div>
 
 <script>
 (() => {
@@ -125,12 +126,13 @@
       if (now === was) return;
       clearInterval(window.__w07poll);
       const newest = (s.opened || []).filter((x) => !el.dataset.state.split("|")[0].split(",").includes(x)).pop();
+      const newSec = newest ? (s.sec_of || {})[newest] : "";
       if (form && dirty && s.open) {
         const b = document.getElementById("newbanner");
         b.style.display = "flex";
-        document.getElementById("newbtn").onclick = () => { form.sec.value = newest || el.dataset.last || "1"; form.requestSubmit(); };
+        document.getElementById("newbtn").onclick = () => { form.sec.value = newSec || el.dataset.lastsec || "1"; form.requestSubmit(); };
       } else {
-        m.go("/w07/" + (newest ? "#sec-" + newest : (s.released ? "#team" : "")), { replace: true });
+        m.go("/w07/" + (newest ? "#it-" + newest : (s.released ? "#team" : "")), { replace: true });
       }
     } catch (e) { /* offline for a moment: try again next tick */ }
   }, 10000);

@@ -13,7 +13,8 @@
     <td>{% if it.open %}<span class="pill ok">open</span>{% else %}<span class="pill">closed</span>{% endif %}</td>
     <td class="actions">
       <a href="{{ url_for('admin.submissions', slug=it.slug) }}">submissions</a>
-      <a href="{{ url_for('admin.analytics', slug=it.slug) }}">analytics</a>
+      <a href="{{ url_for('admin.analytics', slug=it.slug) }}">{{ 'live view' if it.slug == 'w07' else 'analytics' }}</a>{% if it.slug == 'w07' %}
+      <a href="{{ url_for('admin.w07_control') }}">control</a>{% endif %}
       <a href="{{ url_for('admin.report', slug=it.slug) }}">report</a>
       <a href="{{ url_for('admin.export_csv', slug=it.slug) }}">csv</a>
       <form method="post" action="{{ url_for('admin.toggle', slug=it.slug) }}" style="display:inline"><button class="link">{{ 'close' if it.open else 'open' }}</button></form>

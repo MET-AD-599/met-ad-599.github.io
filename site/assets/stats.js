@@ -261,4 +261,66 @@ function w06(d) {
   return { ...t, types, sets, n_q, n_code: t.ans.filter((a) => a.q_no > 5 && a.code).length };
 }
 
-export const STATS = { w01, w02, w03, w04, w05, w06 };
+
+// ---- w07 · live checkpoint results (no names) -----------------------------------------------------------------
+function w07Item(it, rows, key) {
+  const n = rows.length;
+  const out = { ...it, n, key: key ?? null };
+  if (it.type === "single" || it.type === "multi") {
+    const counts = new Map(it.options.map((o) => [o, 0]));
+    for (const r of rows) {
+      const picked = it.type === "multi" ? (() => { try { return JSON.parse(r.answer); } catch { return []; } })() : [r.answer];
+      for (const p of picked) if (counts.has(p)) counts.set(p, counts.get(p) + 1);
+    }
+    const top = Math.max(1, ...counts.values());
+    out.bars = [...counts.entries()].map(([label, c]) => ({
+      label, n: c, w: Math.round((100 * c) / top), pct: n ? Math.round((100 * c) / n) : 0, is_key: key != null && label === key }));
+    if (key != null) {
+      out.n_right = rows.filter((r) => r.answer === key).length;
+      out.pct_right = n ? Math.round((100 * out.n_right) / n) : 0;
+    }
+  } else if (it.type === "number") {
+    const xs = rows.map((r) => Number(r.answer)).filter((x) => Number.isFinite(x));
+    out.n = xs.length;
+    if (xs.length) {
+      const sorted = [...xs].sort((a, b) => a - b), m = Math.floor(sorted.length / 2);
+      out.median = sorted.length % 2 ? sorted[m] : (sorted[m - 1] + sorted[m]) / 2;
+      out.mean = Math.round((10 * sum(xs)) / xs.length) / 10;
+      out.vmin = sorted[0]; out.vmax = sorted[sorted.length - 1];
+      const lo = Math.floor(it.min ?? out.vmin), hi = Math.ceil(it.max ?? out.vmax);
+      const width = hi - lo + 1 <= 21 ? 1 : Math.ceil((hi - lo + 1) / 10);
+      const bins = [];
+      for (let b = lo; b <= hi; b += width) bins.push({ from: b, to: Math.min(hi, b + width - 1), n: 0 });
+      for (const x of xs) {
+        const k = Math.min(bins.length - 1, Math.max(0, Math.floor((x - lo) / width)));
+        bins[k].n += 1;
+      }
+      const top = Math.max(1, ...bins.map((b) => b.n));
+      out.bins = bins.map((b) => ({ ...b, h: Math.round((100 * b.n) / top), label: b.from === b.to ? String(b.from) : `${b.from}-${b.to}` }));
+    }
+  } else {
+    out.texts = rows.map((r) => r.answer);
+  }
+  return out;
+}
+
+function w07(d, q = {}) {
+  const key = d.key || {}, opened = d.opened || [], secsAll = d.content.sections;
+  const by = new Map();
+  for (const a of d.answers) { if (!by.has(a.item_id)) by.set(a.item_id, []); by.get(a.item_id).push(a); }
+  const only = q.only || "";
+  const shown = secsAll.filter((s) => opened.includes(s.id) || q.all);
+  const sections = shown.map((s) => ({ id: s.id, title: s.title,
+    items: s.items.filter((it) => !only || it.id === only).map((it) => w07Item(it, by.get(it.id) || [], key[it.id])) }))
+    .filter((s) => s.items.length).reverse();                     // newest section first: that is what we are discussing
+  const next = secsAll.find((s) => !opened.includes(s.id));
+  return {
+    sections, only, next: next ? { id: next.id, title: next.title } : null,
+    n_students: new Set(d.answers.filter((a) => a.student_id > 0).map((a) => a.student_id)).size,
+    n_rehearsal: new Set(d.answers.filter((a) => a.student_id < 0).map((a) => a.student_id)).size,
+    n_answers: d.answers.length, n_roster: d.n_roster, n_teams: d.n_teams, released: d.released,
+    opened, n_sections: secsAll.length,
+  };
+}
+
+export const STATS = { w01, w02, w03, w04, w05, w06, w07 };

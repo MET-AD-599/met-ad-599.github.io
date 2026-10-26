@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Lecture 7 · control{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .secs td, .secs th { vertical-align: middle; }
+  .secs form, .ctl form { display: inline; margin: 0; }
+  .ctl { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .warn { color: var(--accent); font-weight: 600; }
+  .teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 10px; }
+  .teams div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: .9rem; }
+  .low { color: var(--accent); }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Lecture 7 · control</h1><span class="course">{{ course }}</span></header>
+<p class="muted" style="margin:0">Not for projecting: this page shows names. Project <a href="{{ url_for('admin.w07_live') }}">the live view</a> instead.</p>
+{% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash">{{ m }}</p>{% endfor %}
+
+<div class="card">
+  <div class="ctl">
+    <strong>Activity</strong>
+    {% if open %}<span class="pill ok">open</span>{% else %}<span class="pill">closed</span>{% endif %}
+    <form method="post" action="{{ url_for('admin.toggle', slug='w07') }}"><button class="btn">{{ 'Close the activity' if open else 'Reopen the activity' }}</button></form>
+    <span class="muted">Closing locks every answer. Students still see their team once it is released.</span>
+    <span style="flex:1"></span>
+    <a href="{{ url_for('admin.w07_live') }}">live view</a>
+    <a href="{{ url_for('admin.submissions', slug='w07') }}">submissions · seed · reset</a>
+    <a href="{{ url_for('admin.export_csv', slug='w07') }}">⬇ csv</a>
+    <a href="{{ url_for('admin.export_json', slug='w07') }}">{ } json</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ctl" style="margin-bottom:8px">
+    <strong>Checkpoints</strong>
+    <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="action" value="next"><button class="btn">Open the next section</button></form>
+    <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="action" value="all"><button class="link">open all</button></form>
+    <form method="post" action="{{ url_for('admin.w07_section') }}" onsubmit="return confirm('Hide every section from students? Answers are kept.')"><input type="hidden" name="action" value="none"><button class="link">hide all</button></form>
+  </div>
+  <table class="secs">
+    <tr><th>section</th><th>status</th><th class="num">items</th><th class="num">students answering</th><th class="num">answers</th><th></th></tr>
+    {% for s in sections %}
+    <tr>
+      <td><strong>{{ s.id }}</strong> · {{ s.title }}</td>
+      <td>{% if s.open %}<span class="pill ok">open</span>{% else %}<span class="pill">hidden</span>{% endif %}</td>
+      <td class="num">{{ s.n_items }}</td><td class="num">{{ s.n_students }}</td><td class="num">{{ s.n_answers }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin.w07_section') }}"><input type="hidden" name="sec" value="{{ s.id }}"><input type="hidden" name="action" value="{{ 'close' if s.open else 'open' }}"><button class="link">{{ 'hide' if s.open else 'open' }}</button></form>
+        · <a href="{{ url_for('admin.w07_live') }}#s-{{ s.id }}">live</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <div class="ctl">
+    <strong>Term project teams</strong>
+    {% if released %}<span class="pill ok">released</span>{% else %}<span class="pill">not released</span>{% endif %}
+    <span class="muted">{{ teams|length }} teams loaded</span>
+    {% if released %}
+    <form method="post" action="{{ url_for('admin.w07_teams') }}"><input type="hidden" name="action" value="hide"><button class="btn">Hide teams</button></form>
+    {% else %}
+    <form method="post" action="{{ url_for('admin.w07_teams') }}" onsubmit="return confirm('Release the teams? Every student will see their team on /w07/.')"><input type="hidden" name="action" value="release"><button class="btn danger">Release teams</button></form>
+    {% endif %}
+  </div>
+  {% if unmatched|length %}<p class="warn">Not on the roster, so they cannot see a team: {{ unmatched|join(', ') }}</p>{% endif %}
+  {% if teams|length == 0 %}<p class="muted">No teams loaded. Run <code>tools\sync_content.bat</code>: it reads <code>roster_teams_competence.csv</code> (username and team only).</p>{% endif %}
+  <details><summary class="muted" style="cursor:pointer;margin-top:8px">Show the teams</summary>
+    <div class="teams">{% for t in teams %}<div><strong>Team {{ t.team }}</strong><br>{{ t.members|join(', ') }}</div>{% endfor %}</div>
+  </details>
+</div>
+
+<div class="card" style="overflow-x:auto">
+  <strong>Who has answered</strong> <span class="muted">answered counts only the {{ n_items_open }} items in open sections</span>
+  <table style="margin-top:8px">
+    <tr><th>student</th><th>username</th><th class="num">team</th><th class="num">answered</th><th class="num">checks right</th><th>last answer (UTC)</th></tr>
+    {% for p in people %}
+    <tr>
+      <td>{{ p.first_name }} {{ p.last_name }}</td><td class="muted">{{ p.username }}</td>
+      <td class="num">{% if p.team %}{{ p.team }}{% else %}<span class="low">none</span>{% endif %}</td>
+      <td class="num{% if n_items_open and p.n_done < n_items_open %} low{% endif %}">{{ p.n_done }}/{{ n_items_open }}</td>
+      <td class="num">{{ p.n_right }}/{{ p.n_checks }}</td>
+      <td>{{ (p.last or '-').slice(11, 16) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

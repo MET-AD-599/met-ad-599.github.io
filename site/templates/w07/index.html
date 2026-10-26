@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Lecture 7 checkpoints{% endblock %}
+{% block head %}
+<style>
+  .team { border: 2px solid var(--c3); }
+  .team h2 { margin: 0 0 4px; font-size: 1.25rem; }
+  .team td { padding: 8px 6px; }
+  .team .me { font-weight: 700; }
+  h2.sec { font-size: 1.15rem; margin: 30px 0 0; scroll-margin-top: 12px; }
+  h2.sec .n { color: var(--muted); font-weight: 400; font-size: .9rem; }
+  .item .kind { font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .item .kind.check { color: var(--c1); }
+  .item .prompt { font-weight: 600; margin: 4px 0 10px; }
+  .item .prompt code { font-weight: 500; background: #f1f1ee; padding: 1px 5px; border-radius: 4px; }
+  .opts label { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 8px;
+                padding: 9px 12px; margin: 6px 0; cursor: pointer; background: #fff; }
+  .opts label:hover { border-color: var(--ink); }
+  .opts input { margin-top: 4px; flex: 0 0 auto; }
+  .opts code { font-size: .9em; }
+  input.num { max-width: 160px; }
+  .progress { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: .92rem; }
+  .bar { flex: 1 1 160px; height: 8px; background: #ecebe6; border-radius: 99px; overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--c3); }
+  .waiting { text-align: center; padding: 34px 20px; }
+  .waiting .big { font-size: 2rem; }
+  .savednote { color: #1f7a4a; font-weight: 600; font-size: .9rem; margin-left: 8px; }
+  #newbanner { position: fixed; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff; padding: 12px 16px;
+               display: none; justify-content: center; gap: 14px; align-items: center; z-index: 10; }
+  #newbanner button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Lecture 7 checkpoints</h1><span class="course">{{ course }}</span></header>
+{% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash">{{ m }}</p>{% endfor %}
+
+{% if released and team and team.team %}
+<div class="card team" id="team">
+  <h2>Your term project team: Team {{ team.team }}</h2>
+  <p class="muted" style="margin:0 0 8px">Say hello to your teammates tonight and swap contact details. You will build your term project together.</p>
+  <table>
+    <tr><th>Name</th><th>Program</th><th>Email</th></tr>
+    {% for m in team.members %}
+    <tr{% if m.is_me %} class="me"{% endif %}><td>{{ m.first_name }} {{ m.last_name }}{% if m.is_me %} <span class="pill ok">you</span>{% endif %}</td><td>{{ m.program }}</td><td><a href="mailto:{{ m.email }}">{{ m.email }}</a></td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% elif released %}
+<div class="card team" id="team">
+  <h2>Your term project team</h2>
+  <p style="margin:0">Your name is not on the team list yet. Please check with your instructor and they will add you to a team.</p>
+</div>
+{% endif %}
+
+{% if not open %}
+<div class="card"><strong>The checkpoints are closed.</strong> <span class="muted">Thanks for taking part! Your answers are below, read only.</span></div>
+{% endif %}
+
+{% if sections|length == 0 %}
+<div class="card waiting">
+  <div class="big">⏳</div>
+  <p style="margin:6px 0 0"><strong>Waiting for the first checkpoint.</strong></p>
+  <p class="muted" style="margin:4px 0 0">Keep this page open. Questions appear here as we reach them in the lecture.</p>
+</div>
+{% else %}
+<div class="card progress">
+  <span>You have answered <strong>{{ n_done }}</strong> of <strong>{{ n_items }}</strong> questions so far</span>
+  <span class="bar"><span style="width:{{ (100 * n_done / n_items) if n_items else 0 }}%"></span></span>
+  <a href="{{ url_for('week07.index') }}">↻ refresh</a>
+</div>
+<p class="muted" style="margin:4px 2px 0;font-size:.9rem">Polls ask what you think: there is no wrong answer. Checks test tonight's ideas. Only you see your answers, and you can change them until the checkpoints close.</p>
+
+<form method="post" action="{{ url_for('week07.save') }}" id="w07form">
+<input type="hidden" name="sec" value="">
+<fieldset{% if not open %} disabled{% endif %}>
+{% for s in secs %}
+<h2 class="sec" id="sec-{{ s.id }}">Checkpoint {{ s.id }} · {{ s.title }} <span class="n">{{ s.n_done }}/{{ s.items|length }}</span>{% if saved == s.id %}<span class="savednote">✓ Saved</span>{% endif %}</h2>
+{% for it in s.items %}
+<div class="card item">
+  <div class="kind {{ it.kind }}">{{ 'Poll' if it.kind == 'poll' else 'Check' }}</div>
+  <div class="prompt">{{ it.prompt|md }}</div>
+  {% if it.type == 'single' %}
+  <div class="opts">{% for o in it.opts %}
+    <label><input type="radio" name="a_{{ it.id }}" value="{{ o.text }}"{% if o.on %} checked{% endif %}><span>{{ o.text|md }}</span></label>
+  {% endfor %}</div>
+  {% elif it.type == 'multi' %}
+  <div class="opts">{% for o in it.opts %}
+    <label><input type="checkbox" name="a_{{ it.id }}" value="{{ o.text }}"{% if o.on %} checked{% endif %}><span>{{ o.text|md }}</span></label>
+  {% endfor %}</div>
+  {% elif it.type == 'number' %}
+  <input class="num" type="number" name="a_{{ it.id }}" value="{{ it.val }}"{% if it.ranged %} min="{{ it.min }}" max="{{ it.max }}"{% endif %} step="any" inputmode="decimal">
+  {% if it.ranged %}<span class="muted" style="margin-left:8px;font-size:.88rem">{{ it.min }} to {{ it.max }}</span>{% endif %}
+  {% else %}
+  <textarea name="a_{{ it.id }}" maxlength="2000" placeholder="Type your answer">{{ it.val }}</textarea>
+  {% endif %}
+</div>
+{% endfor %}
+{% if open %}<button class="primary" type="submit" onclick="this.form.sec.value='{{ s.id }}'">Save checkpoint {{ s.id }}</button>{% endif %}
+{% endfor %}
+</fieldset>
+</form>
+{% endif %}
+
+<div id="newbanner"><span>A new checkpoint is open.</span><button type="button" id="newbtn">Save my answers and show it</button></div>
+<div id="w07state" data-state="{{ opened|join(',') }}|{{ released }}|{{ open }}" data-last="{{ opened|last if opened|length else '' }}" hidden></div>
+
+<script>
+(() => {
+  clearInterval(window.__w07poll);
+  const page = document.body;
+  const here = () => page.isConnected && page.dataset.page === "w07/index.html";
+  const form = document.getElementById("w07form");
+  let dirty = false;
+  if (form) { form.addEventListener("input", () => { dirty = true; }); form.addEventListener("change", () => { dirty = true; }); }
+  const el = document.getElementById("w07state");
+  const was = el.dataset.state;
+  const src = document.querySelector('script[type=module][src*="assets/app.js"]').src;
+  window.__w07poll = setInterval(async () => {
+    if (!document.body.dataset.page) return;
+    if (!here()) { clearInterval(window.__w07poll); return; }
+    try {
+      const m = await import(src);
+      const s = await m.call("w07_state");
+      const now = (s.opened || []).join(",") + "|" + s.released + "|" + s.open;
+      if (now === was) return;
+      clearInterval(window.__w07poll);
+      const newest = (s.opened || []).filter((x) => !el.dataset.state.split("|")[0].split(",").includes(x)).pop();
+      if (form && dirty && s.open) {
+        const b = document.getElementById("newbanner");
+        b.style.display = "flex";
+        document.getElementById("newbtn").onclick = () => { form.sec.value = newest || el.dataset.last || "1"; form.requestSubmit(); };
+      } else {
+        m.go("/w07/" + (newest ? "#sec-" + newest : (s.released ? "#team" : "")), { replace: true });
+      }
+    } catch (e) { /* offline for a moment: try again next tick */ }
+  }, 10000);
+})();
+</script>
+{% endblock %}

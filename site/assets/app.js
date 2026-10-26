@@ -48,7 +48,7 @@ export async function call(route, args = {}) {
 // ---- routes: [method, pattern, spec] -----------------------------------------------------------------
 // spec.rpc  : the app.r_<rpc> function to call      spec.tpl : template to render with its result
 // spec.prep : extra context derived in the browser   spec.download : turns the result into a file
-const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06" }[slug]);
+const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07" }[slug]);
 const ROUTES = [
   ["GET", "/", { rpc: "home", tpl: "index.html" }],
   ["GET", "/login", { rpc: "me", tpl: "login.html", prep: (c, p, q) => ({ username: q.username || "" }) }],
@@ -63,6 +63,12 @@ const ROUTES = [
   ["POST", "/admin/students", { rpc: "admin_roster", form: async (f) => rosterFromCSV(await fileText(f, "roster")) }],
   ["GET", "/admin/students/template.csv", { download: () => file("ad599_roster_template.csv", "text/csv", ROSTER_TEMPLATE) }],
   ["POST", "/admin/students/delete/:sid", { rpc: "admin_delete_student" }],
+  // w07 instructor pages (before the generic /admin/:slug/... routes)
+  ["GET", "/admin/w07/analytics", { rpc: "admin_data", args: () => ({ slug: "w07" }), tpl: "w07/analytics.html",
+    prep: (c, p, q) => ({ s: STATS.w07(c, q), mod: { TITLE: c.title } }) }],
+  ["GET", "/admin/w07/control", { rpc: "admin_w07_control", tpl: "w07/control.html" }],
+  ["POST", "/admin/w07/section", { rpc: "admin_w07_section" }],
+  ["POST", "/admin/w07/teams", { rpc: "admin_w07_teams" }],
   ["GET", "/admin/:slug/", { rpc: "admin_submissions", tpl: "admin/submissions.html",
     prep: (c) => ({ mod: { TITLE: c.title }, columns: c.columns }) }],
   ["POST", "/admin/:slug/delete/:row_id", { rpc: "admin_delete_row" }],
@@ -111,7 +117,27 @@ const ROUTES = [
     part1_qs: c.s.questions.filter((q) => q.part === c.part1),
     part2_qs: c.s.questions.filter((q) => q.part === c.part2) }) }],
   ["POST", "/w06/answers", { rpc: "w06_answers" }],
+
+  ["GET", "/w07/", { rpc: "w07_index", tpl: "w07/index.html", prep: w07Prep }],
+  ["POST", "/w07/save", { rpc: "w07_save" }],
 ];
+
+// w07: each item gets its saved value, and choice items get [{text, on}] so the template stays simple
+function w07Prep(c) {
+  const mine = c.mine || {};
+  const secs = (c.sections || []).map((s) => ({
+    ...s,
+    n_done: s.items.filter((it) => it.id in mine).length,
+    items: s.items.map((it) => {
+      const v = mine[it.id] ?? "";
+      let picked = [];
+      if (it.type === "multi" && v) { try { picked = JSON.parse(v); } catch { picked = []; } }
+      return { ...it, val: it.type === "multi" ? "" : v, ranged: it.min !== undefined && it.max !== undefined,
+               opts: (it.options || []).map((o) => ({ text: o, on: it.type === "multi" ? picked.includes(o) : o === v })) };
+    }),
+  }));
+  return { secs };
+}
 
 function adminStats(c, p) {
   const s = STATS[p.slug](c);
@@ -164,6 +190,9 @@ const ENDPOINTS = {
   "week04.index": "/w04/", "week04.answers": "/w04/answers", "week04.design": "/w04/design", "week04.class_data": "/w04/class_data.py",
   "week05.index": "/w05/", "week05.data": "/w05/data/{name}",
   "week06.index": "/w06/", "week06.answers": "/w06/answers",
+  "week07.index": "/w07/", "week07.save": "/w07/save",
+  "admin.w07_live": "/admin/w07/analytics", "admin.w07_control": "/admin/w07/control",
+  "admin.w07_section": "/admin/w07/section", "admin.w07_teams": "/admin/w07/teams",
 };
 
 function url_for(endpoint, kw = {}) {
@@ -287,9 +316,9 @@ async function render(tpl, ctx) {
   const me = ctx.me || { student: null, is_admin: false };
   const html = env.render(tpl, { course: CONFIG.course, student: me.student, is_admin: me.is_admin, ...ctx });
   const doc = new DOMParser().parseFromString(html, "text/html");
-  document.title = doc.title;
   document.querySelectorAll("head > :not([data-shell])").forEach((n) => n.remove());
   for (const n of [...doc.head.childNodes]) if (n.nodeName !== "TITLE") document.head.appendChild(document.importNode(n, true));
+  document.title = doc.title;                    // after the old <title> is removed, so the tab keeps a name
   document.body.replaceWith(document.importNode(doc.body, true));
   // run the page's own <script>s (charts, copy buttons); a block keeps re-renders from clashing
   for (const old of document.querySelectorAll("script:not([data-shell])")) {

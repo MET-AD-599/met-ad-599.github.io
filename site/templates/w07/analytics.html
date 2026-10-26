@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Lecture 7 · live{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  body { font-size: 20px; }
+  .wrap.wide { max-width: 1400px; }
+  .live-top { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin: 4px 0 10px; font-size: 16px; }
+  .live-top form { margin: 0; }
+  .live-top .btn { font-size: 16px; }
+  .count { font-size: 16px; color: var(--muted); }
+  h2.sec { font-size: 1.3rem; margin: 26px 0 4px; }
+  .item { padding: 22px 26px; }
+  .item .head { display: flex; gap: 12px; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+  .item .kind { font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .item .kind.check { color: var(--c1); }
+  .item .prompt { font-size: 1.45rem; font-weight: 700; line-height: 1.3; margin: 6px 0 14px; }
+  .item .n { font-size: 1rem; color: var(--muted); white-space: nowrap; }
+  .item .n a { color: var(--muted); }
+  .hb { display: grid; grid-template-columns: minmax(180px, 34%) 1fr 92px; gap: 12px; align-items: center; margin: 9px 0; }
+  .hb .lab { font-size: 1.05rem; line-height: 1.25; }
+  .hb .trk { background: #efeee9; border-radius: 6px; height: 34px; overflow: hidden; }
+  .hb .fill { display: block; height: 100%; background: var(--c1); border-radius: 6px; transition: width .4s; }
+  .hb.key .fill { background: #2e9a5e; }
+  .hb.key .lab { font-weight: 800; color: #1f7a4a; }
+  .hb .v { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+  .hb .v small { color: var(--muted); font-weight: 400; }
+  .right { display: inline-block; background: #d9efe2; color: #1f5c3a; font-weight: 800; border-radius: 999px; padding: 4px 14px; font-size: 1.05rem; }
+  .tiles { grid-template-columns: repeat(4, minmax(120px, 1fr)); margin-bottom: 12px; }
+  .tile .v { font-size: 2.2rem; }
+  .tile .k { font-size: .9rem; }
+  .hist { display: flex; align-items: flex-end; gap: 6px; height: 190px; border-bottom: 2px solid var(--line); padding-top: 26px; }
+  .hist .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
+  .hist .col i { display: block; width: 100%; background: var(--c2); border-radius: 4px 4px 0 0; }
+  .hist .col b { font-size: .85rem; margin-bottom: 2px; }
+  .hist-x { display: flex; gap: 6px; }
+  .hist-x span { flex: 1; text-align: center; font-size: .78rem; color: var(--muted); min-width: 0; overflow: hidden; }
+  .texts { max-height: 420px; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+  .texts li { border-left: 4px solid var(--c4); background: #faf9f6; padding: 9px 14px; margin: 8px 0; border-radius: 0 8px 8px 0; font-size: 1.1rem; white-space: pre-wrap; }
+  .empty { color: var(--muted); font-size: 1.1rem; }
+  .paused { background: #fff4d6; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Lecture 7 · live</h1><span class="course">{{ course }}</span></header>
+{% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash noprint">{{ m }}</p>{% endfor %}
+<div class="live-top noprint">
+  {% if open %}<span class="pill ok">open</span>{% else %}<span class="pill">closed</span>{% endif %}
+  <span class="count">{{ s.n_students }} of {{ s.n_roster }} students answering{% if s.n_rehearsal %} · {{ s.n_rehearsal }} rehearsal{% endif %} · {{ s.n_answers }} answers · sections open {{ s.opened|length }}/{{ s.n_sections }}{% if s.released %} · teams released{% endif %}</span>
+  <span style="flex:1"></span>
+  {% if s.next %}
+  <form method="post" action="{{ url_for('admin.w07_section') }}">
+    <input type="hidden" name="action" value="next"><input type="hidden" name="_back" value="/admin/w07/analytics">
+    <button class="btn">Open {{ s.next.id }} · {{ s.next.title }}</button>
+  </form>
+  {% endif %}
+  {% if s.only %}<a href="{{ url_for('admin.w07_live') }}">show all</a>{% endif %}
+  <a href="{{ url_for('admin.w07_control') }}">control</a>
+  <a href="#" id="pause">pause refresh</a>
+</div>
+
+{% if s.sections|length == 0 %}
+<div class="card"><p class="empty" style="margin:0">No section is open yet. {% if s.next %}Use <strong>Open {{ s.next.id }}</strong> above when you reach the first checkpoint.{% endif %}</p></div>
+{% endif %}
+
+{% for sec in s.sections %}
+<h2 class="sec" id="s-{{ sec.id }}">Checkpoint {{ sec.id }} · {{ sec.title }}</h2>
+{% for it in sec.items %}
+<div class="card item" id="i-{{ it.id }}">
+  <div class="head">
+    <span class="kind {{ it.kind }}">{{ it.id }} · {{ 'Poll' if it.kind == 'poll' else 'Check' }}{% if it.lo %} · {{ it.lo }}{% endif %}</span>
+    <span class="n">{{ it.n }} answer{{ '' if it.n == 1 else 's' }} · <a href="{{ url_for('admin.w07_live', only=it.id) }}">focus</a></span>
+  </div>
+  <div class="prompt">{{ it.prompt|md }}</div>
+
+  {% if it.type == 'single' or it.type == 'multi' %}
+    {% if it.key and it.n %}<p style="margin:0 0 8px"><span class="right">{{ it.pct_right }}% right</span> <span class="muted" style="font-size:1rem">{{ it.n_right }} of {{ it.n }}</span></p>{% endif %}
+    {% for b in it.bars %}
+    <div class="hb{% if b.is_key %} key{% endif %}">
+      <div class="lab">{% if b.is_key %}✓ {% endif %}{{ b.label|md }}</div>
+      <div class="trk"><span class="fill" style="width:{{ b.w }}%"></span></div>
+      <div class="v">{{ b.n }} <small>{{ b.pct }}%</small></div>
+    </div>
+    {% endfor %}
+    {% if it.type == 'multi' %}<p class="muted" style="font-size:.95rem;margin:6px 0 0">Pick all that apply: percentages are of the {{ it.n }} who answered.</p>{% endif %}
+
+  {% elif it.type == 'number' %}
+    {% if it.n %}
+    <div class="tiles">
+      <div class="tile"><div class="v">{{ it.n }}</div><div class="k">answers</div></div>
+      <div class="tile"><div class="v">{{ it.median }}</div><div class="k">median</div></div>
+      <div class="tile"><div class="v">{{ it.mean }}</div><div class="k">mean</div></div>
+      <div class="tile"><div class="v">{{ it.vmin }} to {{ it.vmax }}</div><div class="k">range</div></div>
+    </div>
+    <div class="hist">{% for b in it.bins %}<div class="col">{% if b.n %}<b>{{ b.n }}</b>{% endif %}<i style="height:{{ b.h }}%"></i></div>{% endfor %}</div>
+    <div class="hist-x">{% for b in it.bins %}<span>{{ b.label }}</span>{% endfor %}</div>
+    {% else %}<p class="empty">No answers yet.</p>{% endif %}
+
+  {% else %}
+    {% if it.n %}
+    <ul class="texts">{% for t in it.texts %}<li>{{ t }}</li>{% endfor %}</ul>
+    {% else %}<p class="empty">No answers yet.</p>{% endif %}
+  {% endif %}
+</div>
+{% endfor %}
+{% endfor %}
+
+<script>
+(() => {
+  clearTimeout(window.__w07live);
+  const page = document.body;
+  const src = document.querySelector('script[type=module][src*="assets/app.js"]').src;
+  let paused = false;
+  try { paused = sessionStorage.getItem("w07live.paused") === "1"; } catch (e) {}
+  const btn = document.getElementById("pause");
+  const show = () => { btn.textContent = paused ? "resume refresh" : "pause refresh"; document.body.classList.toggle("paused", paused); };
+  show();
+  btn.onclick = (e) => {
+    e.preventDefault(); paused = !paused;
+    try { sessionStorage.setItem("w07live.paused", paused ? "1" : "0"); } catch (err) {}
+    show(); if (!paused) tick();
+  };
+  async function tick() {
+    clearTimeout(window.__w07live);
+    window.__w07live = setTimeout(async () => {
+      if (!page.isConnected || page.dataset.page !== "w07/analytics.html") return;
+      if (paused) return;
+      const m = await import(src);
+      const y = window.scrollY;
+      const base = m.BASE.replace(/\/$/, "");
+      const path = location.pathname.startsWith(base) ? location.pathname.slice(base.length) : location.pathname;
+      await m.go(path + location.search, { replace: true });
+      window.scrollTo(0, y);
+    }, 5000);
+  }
+  tick();
+})();
+</script>
+{% endblock %}

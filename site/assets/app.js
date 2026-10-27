@@ -69,6 +69,9 @@ const ROUTES = [
   ["GET", "/admin/w07/control", { rpc: "admin_w07_control", tpl: "w07/control.html" }],
   ["POST", "/admin/w07/section", { rpc: "admin_w07_section" }],
   ["POST", "/admin/w07/teams", { rpc: "admin_w07_teams" }],
+  ["GET", "/admin/w07/teamview", { rpc: "admin_w07_teamview", tpl: "w07/teams.html" }],
+  ["GET", "/admin/w07/teams.csv", { rpc: "admin_w07_teamview", download: (c) => file("ad599_term_project_teams.csv", "text/csv",
+    toCSV(c.rows.map((r) => Object.fromEntries(TEAM_COLS.map((k) => [k, r[k]]))))) }],
   ["GET", "/admin/:slug/", { rpc: "admin_submissions", tpl: "admin/submissions.html",
     prep: (c) => ({ mod: { TITLE: c.title }, columns: c.columns }) }],
   ["POST", "/admin/:slug/delete/:row_id", { rpc: "admin_delete_row" }],
@@ -139,6 +142,12 @@ function w07Prep(c) {
   return { secs };
 }
 
+// column order for /admin/w07/teams.csv
+const TEAM_COLS = ["team", "tier", "competence", "first_name", "last_name", "nickname", "username", "email", "program",
+  "comfort_excel", "comfort_python", "comfort_sql", "commute_min", "w02_variables", "w02_structures",
+  "w03_correct", "w03_answered", "w04_correct", "w04_answered", "w04_design", "w05_team_algo",
+  "w06_correct", "w06_answered", "w07_answered", "w07_checks_right", "w07_checks", "on_roster"];
+
 function adminStats(c, p) {
   const s = STATS[p.slug](c);
   return { s, rows: c.rows || [], mod: { TITLE: c.title } };
@@ -193,6 +202,7 @@ const ENDPOINTS = {
   "week07.index": "/w07/", "week07.save": "/w07/save",
   "admin.w07_live": "/admin/w07/analytics", "admin.w07_control": "/admin/w07/control",
   "admin.w07_section": "/admin/w07/section", "admin.w07_teams": "/admin/w07/teams",
+  "admin.w07_teamview": "/admin/w07/teamview", "admin.w07_teams_csv": "/admin/w07/teams.csv",
 };
 
 function url_for(endpoint, kw = {}) {

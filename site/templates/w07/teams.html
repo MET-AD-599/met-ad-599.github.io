@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Lecture 7 · teams{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .tv-top { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 4px 0 10px; }
+  .team { margin-bottom: 18px; }
+  .team-head { display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline; margin-bottom: 6px; }
+  .team-head h2 { margin: 0; font-size: 1.25rem; }
+  .chip { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; font-size: .82rem; margin-right: 4px; }
+  .tv { width: 100%; font-size: .84rem; }
+  .tv td, .tv th { padding: 6px 7px; }
+  .tv td.prog { font-size: .78rem; color: var(--muted); max-width: 120px; }
+  .tv .name strong { white-space: nowrap; }
+  .tv th { font-size: .75rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); white-space: nowrap; }
+  .tv td { vertical-align: top; }
+  .tv .name strong { display: block; }
+  .tv .sub { color: var(--muted); font-size: .8rem; }
+  .tv td.num, .tv th.num { text-align: right; white-space: nowrap; }
+  .grp { border-left: 2px solid var(--line); }
+  .low { color: var(--accent); font-weight: 600; }
+  .none { color: var(--muted); }
+  .yes { color: #16a34a; font-weight: 600; }
+  .warn { color: var(--accent); }
+  @media print { .noprint { display: none; } .team { break-inside: avoid; } }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Lecture 7 · team view</h1><span class="course">{{ course }}</span></header>
+<p class="muted noprint" style="margin:0">Instructor only: names, tiers and scores. Not for projecting.</p>
+
+<div class="tv-top noprint">
+  <span><strong>{{ teams|length }}</strong> teams · <strong>{{ n_students }}</strong> students</span>
+  {% if released %}<span class="pill ok">released to students</span>{% else %}<span class="pill">not released</span>{% endif %}
+  <span style="flex:1"></span>
+  <a href="{{ url_for('admin.w07_teams_csv') }}">⬇ teams.csv</a>
+  <a href="#" onclick="window.print();return false">print</a>
+  <a href="{{ url_for('admin.w07_control') }}">control</a>
+</div>
+
+{% if no_team|length %}<p class="warn">On the roster but not on a team: {% for p in no_team %}{{ p.first_name }} {{ p.last_name }} ({{ p.username }}){{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+{% if teams|length == 0 %}<div class="card"><p class="muted" style="margin:0">No teams loaded. Run <code>tools\sync_content.bat</code>.</p></div>{% endif %}
+
+{% for t in teams %}
+<div class="card team" id="team-{{ t.team }}">
+  <div class="team-head">
+    <h2>Team {{ t.team }}</h2>
+    <span class="chip">{{ t.n }} students</span>
+    {% if t.mean_competence != none %}<span class="chip">mean competence {{ t.mean_competence }}</span>{% endif %}
+    {% if t.tiers %}<span class="chip">tiers {{ t.tiers|join(', ') }}</span>{% endif %}
+    {% for p in t.programs %}<span class="chip">{{ p }}</span>{% endfor %}
+    <span style="flex:1"></span>
+    <a class="noprint" href="mailto:{{ t.emails }}?subject=AD%20599%20term%20project%20%C2%B7%20Team%20{{ t.team }}">✉ email team</a>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="tv">
+    <tr>
+      <th>student</th><th>program</th><th class="num">tier</th><th class="num">competence</th>
+      <th class="num grp">comfort<br>XL · Py · SQL</th><th class="num">commute</th>
+      <th class="num grp">w02<br>vars · structs</th>
+      <th class="num grp">w03</th><th class="num">w04</th><th class="num">w04<br>design</th><th class="num">w05<br>team algo</th><th class="num">w06</th>
+      <th class="num grp">w07<br>ans · checks</th>
+    </tr>
+    {% for m in t.members %}
+    <tr>
+      <td class="name"><strong>{{ m.first_name or m.username }} {{ m.last_name }}</strong>
+        <span class="sub">{{ m.username }}{% if m.nickname and m.nickname != m.first_name %} · "{{ m.nickname }}"{% endif %}{% if not m.on_roster %} · <span class="low">not on roster</span>{% endif %}</span></td>
+      <td class="prog">{{ m.program }}</td>
+      <td class="num">{{ m.tier if m.tier != none else '-' }}</td>
+      <td class="num">{{ m.competence if m.competence != none else '-' }}</td>
+      <td class="num grp">{% if m.comfort_python != none %}{{ m.comfort_excel }} · {{ m.comfort_python }} · {{ m.comfort_sql }}{% else %}<span class="none">no w01</span>{% endif %}</td>
+      <td class="num">{{ (m.commute_min ~ ' min') if m.commute_min != none else '-' }}</td>
+      <td class="num grp">{% if m.w02_variables %}{{ m.w02_variables }} · {{ m.w02_structures }}{% else %}<span class="none">-</span>{% endif %}</td>
+      <td class="num grp">{% if m.w03_answered %}{{ m.w03_correct }}/{{ m.w03_answered }}{% else %}<span class="none">-</span>{% endif %}</td>
+      <td class="num">{% if m.w04_answered %}{{ m.w04_correct }}/{{ m.w04_answered }}{% else %}<span class="none">-</span>{% endif %}</td>
+      <td class="num">{% if m.w04_design %}<span class="yes">✓</span>{% else %}<span class="none">-</span>{% endif %}</td>
+      <td class="num">{% if m.w05_team_algo %}<span class="yes">✓</span>{% else %}<span class="none">-</span>{% endif %}</td>
+      <td class="num">{% if m.w06_answered %}{{ m.w06_correct }}/{{ m.w06_answered }}{% else %}<span class="none">-</span>{% endif %}</td>
+      <td class="num grp">{{ m.w07_answered }} · {{ m.w07_checks_right }}/{{ m.w07_checks }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  </div>
+</div>
+{% endfor %}
+<p class="muted" style="font-size:.8rem">Tier 1 = strongest. Competence: weighted z-scores of w01 to w06 and course work (tools/form_teams.py), class average 0. w03/w04/w06: correct/answered. w07 checks: right/answered.</p>
+{% endblock %}

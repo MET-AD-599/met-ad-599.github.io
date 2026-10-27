@@ -77,6 +77,7 @@
     <strong>Term project teams</strong>
     {% if released %}<span class="pill ok">released</span>{% else %}<span class="pill">not released</span>{% endif %}
     <span class="muted">{{ teams|length }} teams loaded</span>
+    <a href="{{ url_for('admin.w07_teamview') }}">team view (all details)</a>
     {% if released %}
     <form method="post" action="{{ url_for('admin.w07_teams') }}"><input type="hidden" name="action" value="hide"><button class="btn">Hide teams</button></form>
     {% else %}

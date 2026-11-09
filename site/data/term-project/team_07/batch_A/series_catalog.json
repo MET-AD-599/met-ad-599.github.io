@@ -1,0 +1,16 @@
+{
+  "source": "FRED",
+  "series": {
+    "DGS2": "2-year Treasury constant maturity rate",
+    "DGS10": "10-year Treasury constant maturity rate",
+    "DGS30": "30-year Treasury constant maturity rate",
+    "FEDFUNDS": "Effective federal funds rate",
+    "T10Y2Y": "10-year minus 2-year Treasury spread",
+    "CPIAUCSL": "Consumer Price Index for All Urban Consumers",
+    "UNRATE": "Unemployment rate",
+    "PAYEMS": "All employees, total nonfarm",
+    "INDPRO": "Industrial production index",
+    "GDPC1": "Real gross domestic product"
+  },
+  "note": "Descriptions are a short course index, not official FRED series metadata."
+}

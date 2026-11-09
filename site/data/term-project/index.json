@@ -1,0 +1,95 @@
+{
+ "title": "AD 599 term project data",
+ "built": "2026-11-09",
+ "sources": {
+  "SEC": "https://www.sec.gov/search-filings/edgar-application-programming-interfaces",
+  "FDIC": "https://api.fdic.gov/banks/docs",
+  "FRED": "https://fred.stlouisfed.org/docs/api/fred/series_observations.html"
+ },
+ "teams": {
+  "1": {
+   "team": 1,
+   "name": "Technology",
+   "source": "SEC",
+   "entities": "AAPL, MSFT, GOOGL, NVDA",
+   "batches": {
+    "A": {
+     "manifest": "team_01/batch_A/manifest.json",
+     "released": "2026-11-09"
+    }
+   }
+  },
+  "2": {
+   "team": 2,
+   "name": "Retail",
+   "source": "SEC",
+   "entities": "COST, HD, TGT, WMT",
+   "batches": {
+    "A": {
+     "manifest": "team_02/batch_A/manifest.json",
+     "released": "2026-11-09"
+    }
+   }
+  },
+  "3": {
+   "team": 3,
+   "name": "Industrial",
+   "source": "SEC",
+   "entities": "CAT, DE, GE, HON",
+   "batches": {
+    "A": {
+     "manifest": "team_03/batch_A/manifest.json",
+     "released": "2026-11-09"
+    }
+   }
+  },
+  "4": {
+   "team": 4,
+   "name": "Bank profitability",
+   "source": "FDIC",
+   "entities": "16 large US banks",
+   "batches": {
+    "A": {
+     "manifest": "team_04/batch_A/manifest.json",
+     "released": "2026-11-09"
+    }
+   }
+  },
+  "5": {
+   "team": 5,
+   "name": "Bank funding and liquidity",
+   "source": "FDIC",
+   "entities": "16 large US banks",
+   "batches": {
+    "A": {
+     "manifest": "team_05/batch_A/manifest.json",
+     "released": "2026-11-09"
+    }
+   }
+  },
+  "6": {
+   "team": 6,
+   "name": "Bank credit risk",
+   "source": "FDIC",
+   "entities": "16 large US banks",
+   "batches": {
+    "A": {
+     "manifest": "team_06/batch_A/manifest.json",
+     "released": "2026-11-09"
+    }
+   }
+  },
+  "7": {
+   "team": 7,
+   "name": "Banks, rates and the economy",
+   "source": "FDIC+FRED",
+   "entities": "16 large US banks + 10 FRED series",
+   "batches": {
+    "A": {
+     "manifest": "team_07/batch_A/manifest.json",
+     "released": "2026-11-09"
+    }
+   }
+  }
+ }
+}

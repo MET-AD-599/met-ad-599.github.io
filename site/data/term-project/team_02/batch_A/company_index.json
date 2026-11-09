@@ -1,0 +1,10 @@
+{
+  "source": "SEC EDGAR",
+  "tickers_ciks": {
+    "WMT": 104169,
+    "COST": 909832,
+    "TGT": 27419,
+    "HD": 354950
+  },
+  "note": "Original SEC JSON; students determine relevant facts, periods, units, and filing policy."
+}

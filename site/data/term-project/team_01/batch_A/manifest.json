@@ -1,0 +1,52 @@
+{
+ "team": 1,
+ "batch": "A",
+ "built": "2026-11-09",
+ "files": [
+  {
+   "path": "AAPL_companyfacts.json",
+   "bytes": 3516097,
+   "sha256": "5e107a4e7ff7b741916043a5409e7582e52d67ae7b71bdd56584e605a5251779"
+  },
+  {
+   "path": "AAPL_submissions.json",
+   "bytes": 164533,
+   "sha256": "0b0e61bf3ab6ea0c33a95bca99be8defad712262d378282d6e9e343856548fae"
+  },
+  {
+   "path": "GOOGL_companyfacts.json",
+   "bytes": 2615217,
+   "sha256": "198979234506e0ca1699dccd9b9637ab4f3c8aaf8e5c8da35c18f087e35c0a50"
+  },
+  {
+   "path": "GOOGL_submissions.json",
+   "bytes": 152278,
+   "sha256": "679f595245e1405a6fc4930020991b0042b790c5b2a18cd5799b8aa47bd8be60"
+  },
+  {
+   "path": "MSFT_companyfacts.json",
+   "bytes": 4376080,
+   "sha256": "8b41b75fb7e76e608f1cf63bfd84e7dce614b6a15e3e6feb04a9adf39a2d0698"
+  },
+  {
+   "path": "MSFT_submissions.json",
+   "bytes": 185905,
+   "sha256": "1a4256a23be814a5193601a2c733d1da647c45da4d73dfe98eee58e32f8f9251"
+  },
+  {
+   "path": "NVDA_companyfacts.json",
+   "bytes": 3664783,
+   "sha256": "a6f6d9da94c057c68545b6703cc4284c5f9e526ac6205d74113466860c8cb882"
+  },
+  {
+   "path": "NVDA_submissions.json",
+   "bytes": 159914,
+   "sha256": "db787ea656392c0442099ee6498a978e5b0bfba2c14e47a68dda393ddaff0375"
+  },
+  {
+   "path": "company_index.json",
+   "bytes": 245,
+   "sha256": "3b5aed5a5fd56e8cb3f373aeb18da9f87e4b7ee678917499aa1fe96090eda09b"
+  }
+ ]
+}

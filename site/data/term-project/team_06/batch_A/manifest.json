@@ -1,0 +1,92 @@
+{
+ "team": 6,
+ "batch": "A",
+ "built": "2026-11-09",
+ "files": [
+  {
+   "path": "financials/110/page_000000.json",
+   "bytes": 25391,
+   "sha256": "d81f85ecddecba4ab25fd0f816869d63459ce52fbc736ed33ff9df86bd8bf003"
+  },
+  {
+   "path": "financials/11063/page_000000.json",
+   "bytes": 26347,
+   "sha256": "0f5174e7fe13eddae2f02b55166b76ee3c86325f48e12eb6bfbab8e95f855d09"
+  },
+  {
+   "path": "financials/12368/page_000000.json",
+   "bytes": 25725,
+   "sha256": "069183f0a2506668ba8e2b8452ce4f4d72bad3da3626c5b45cfcf65ca2194d31"
+  },
+  {
+   "path": "financials/12441/page_000000.json",
+   "bytes": 25740,
+   "sha256": "f2ce0faf380916712884d20d44656dda220193e92601f0bc3541d4f7731857e7"
+  },
+  {
+   "path": "financials/14/page_000000.json",
+   "bytes": 23812,
+   "sha256": "980663c77db5844ad720da28b427f9d2cdcab8c750f010a845ae3a1facbfe920"
+  },
+  {
+   "path": "financials/16571/page_000000.json",
+   "bytes": 26467,
+   "sha256": "5464dd28730c4f3d98a1d9819f94af55050dea26731fd653e409389ee7ffcf8a"
+  },
+  {
+   "path": "financials/16835/page_000000.json",
+   "bytes": 25385,
+   "sha256": "3af90547c94e7db7ad6391d138add1cd7564643f61715db17a12342b3d69bdb4"
+  },
+  {
+   "path": "financials/17266/page_000000.json",
+   "bytes": 25539,
+   "sha256": "a87ea6a61627ced9214e0dbea80b047734f83ed099bd5c3b1148237195b06121"
+  },
+  {
+   "path": "financials/17281/page_000000.json",
+   "bytes": 26070,
+   "sha256": "5329c8d83ad45c740e6a21d62476ac27ab6b393819f48d58103c47878d97b509"
+  },
+  {
+   "path": "financials/17534/page_000000.json",
+   "bytes": 26201,
+   "sha256": "b9e208f89d32c532f450d8ecb8d99cd5d690c2bec14cf1b0bbea492bd49252f0"
+  },
+  {
+   "path": "financials/18409/page_000000.json",
+   "bytes": 26822,
+   "sha256": "33cc678c6dd99713391ba08ffa580f82a4b82f4689091b82cf5676b5b715e29d"
+  },
+  {
+   "path": "financials/2270/page_000000.json",
+   "bytes": 26322,
+   "sha256": "183aeae94d384c8bacec03b5f79330d2143ebfa029759e50b3d7f85b5d8818a4"
+  },
+  {
+   "path": "financials/24998/page_000000.json",
+   "bytes": 25535,
+   "sha256": "d15f8a0756e59852518ce80333235c1728e25ebcbc7e1832952e87549206ad1d"
+  },
+  {
+   "path": "financials/26881/page_000000.json",
+   "bytes": 24068,
+   "sha256": "0ce9721f181b8ec2c637eb40a23cccd8136d33f9a07e958239931208077c6e8b"
+  },
+  {
+   "path": "financials/27314/page_000000.json",
+   "bytes": 24394,
+   "sha256": "8c853ca67c5024a3ad274e8ea28f5f7f45affec6ec183b8518631a6b9c18da4f"
+  },
+  {
+   "path": "financials/27471/page_000000.json",
+   "bytes": 24309,
+   "sha256": "2972f822f705d5ef4fa3a0ad3307b0109f8fd003a47351826d0e7ae1738840d9"
+  },
+  {
+   "path": "institution_cohort.json",
+   "bytes": 55461,
+   "sha256": "9178e9d09711515ad5d34519082ae8d236e7c2b84ddecaa673e265f01248998a"
+  }
+ ]
+}

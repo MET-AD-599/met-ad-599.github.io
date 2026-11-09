@@ -19,7 +19,7 @@
 {% endblock %}
 {% block body %}
 <header><h1>Team Working Document</h1><span class="course">{{ course }}</span></header>
-<p class="muted" style="margin:0"><a href="{{ url_for('week08.index') }}">← Lecture 8 checkpoints</a></p>
+<p class="muted" style="margin:0"><a href="{{ url_for('week08.index') }}">← Week 8 checkpoints</a></p>
 {% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash">{{ m }}</p>{% endfor %}
 
 {% if not team %}

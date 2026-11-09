@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}AD 599 · Lecture 7 · live{% endblock %}
+{% block title %}AD 599 · Week 7 · live{% endblock %}
 {% block wrapclass %}wide{% endblock %}
 {% block head %}
 <style>
@@ -42,7 +42,7 @@
 </style>
 {% endblock %}
 {% block body %}
-<header><h1>Lecture 7 · live</h1><span class="course">{{ course }}</span></header>
+<header><h1>Week 7 · live</h1><span class="course">{{ course }}</span></header>
 {% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash noprint">{{ m }}</p>{% endfor %}
 <div class="live-top noprint">
   {% if open %}<span class="pill ok">open</span>{% else %}<span class="pill">closed</span>{% endif %}

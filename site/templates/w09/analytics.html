@@ -79,7 +79,7 @@
 {% for it in sec.items %}
 <div class="card item" id="i-{{ it.id }}">
   <div class="head">
-    <span class="kind {{ it.kind }}">{{ it.id }} · {{ 'Poll' if it.kind == 'poll' else 'Check' }}{% if it.lo %} · {{ it.lo }}{% endif %}</span>
+    <span class="kind">{{ it.id }}{% if it.lo %} · {{ it.lo }}{% endif %}</span>
     <span class="n">{{ it.n }} answer{{ '' if it.n == 1 else 's' }} · <a href="{{ url_for('admin.w09_live', only=it.id) }}">focus</a></span>
   </div>
   <div class="prompt">{{ it.prompt|md }}</div>

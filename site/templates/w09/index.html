@@ -61,7 +61,7 @@
   <span class="bar"><span style="width:{{ (100 * n_done / n_items) if n_items else 0 }}%"></span></span>
   <a href="{{ url_for('week09.index') }}">↻ refresh</a>
 </div>
-<p class="muted" style="margin:4px 2px 0;font-size:.9rem">Polls ask what you think: there is no wrong answer. Checks test tonight's ideas. Only you see your answers, and you can change them until the checkpoints close.</p>
+<p class="muted" style="margin:4px 2px 0;font-size:.9rem">Only you see your answers, and you can change them until the checkpoints close.</p>
 <p class="muted" style="margin:4px 2px 0;font-size:.9rem">Rating a SQL clause? <strong>On my own</strong>: you could write it now without help. <strong>With an example</strong>: you could adapt one you are shown. <strong>Recognise it</strong>: you know what it does but could not write it yet.</p>
 
 <form method="post" action="{{ url_for('week09.save') }}" id="w09form">
@@ -71,7 +71,6 @@
 <h2 class="sec" id="sec-{{ s.id }}">Checkpoint {{ s.id }} · {{ s.title }} <span class="n">{{ s.n_done }}/{{ s.items|length }}</span>{% if saved == s.id %}<span class="savednote">✓ Saved</span>{% endif %}</h2>
 {% for it in s.items %}
 <div class="card item" id="it-{{ it.id }}">
-  <div class="kind {{ it.kind }}">{{ 'Poll' if it.kind == 'poll' else 'Check' }}</div>
   <div class="prompt">{{ it.prompt|md }}</div>
   {% if it.type == 'single' %}
   <div class="opts{% if it.layout == 'row' %} row{% endif %}">{% for o in it.opts %}

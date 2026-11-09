@@ -326,4 +326,48 @@ function w07(d, q = {}) {
   };
 }
 
-export const STATS = { w01, w02, w03, w04, w05, w06, w07 };
+// w08 checkpoints have the same shape as w07
+const w08 = w07;
+
+// w09: as w07, plus scale items get a mean score (first option = top score) and a section ranking,
+// and rank items get each option's average position (1 = understood best)
+function w09(d, q = {}) {
+  const out = w07(d, q);
+  const raw = new Map();
+  for (const a of d.answers) { if (!raw.has(a.item_id)) raw.set(a.item_id, []); raw.get(a.item_id).push(a.answer); }
+  for (const sec of out.sections) {
+    for (const it of sec.items) {
+      if (it.scale && it.bars) {
+        const k = it.bars.length; let tot = 0;
+        it.bars.forEach((b, i) => { tot += b.n * (k - i); });
+        it.score = it.n ? Math.round((100 * tot) / it.n) / 100 : null;
+        it.score_max = k;
+      }
+      if (it.type === "rank") {
+        const pos = new Map(it.options.map((o) => [o, []]));
+        let n = 0;
+        for (const v of raw.get(it.id) || []) {
+          let arr; try { arr = JSON.parse(v); } catch { continue; }
+          if (!Array.isArray(arr)) continue;
+          n += 1;
+          arr.forEach((o, i) => { if (pos.has(o)) pos.get(o).push(i + 1); });
+        }
+        const k = it.options.length;
+        it.n = n;
+        it.ranks = [...pos.entries()].map(([label, xs]) => {
+          const avg = xs.length ? xs.reduce((x, y) => x + y, 0) / xs.length : null;
+          return { label, avg: avg == null ? "-" : avg.toFixed(1), w: avg == null ? 0 : Math.round((100 * (k + 1 - avg)) / k), sortkey: avg ?? 99 };
+        }).sort((x, y) => x.sortkey - y.sortkey);
+      }
+    }
+    const scaled = sec.items.filter((it) => it.scale && it.score != null);
+    if (scaled.length > 1) {
+      const k = scaled[0].score_max;
+      sec.ladder = [...scaled].sort((x, y) => y.score - x.score)
+        .map((it) => ({ id: it.id, prompt: it.prompt, score: it.score.toFixed(2), n: it.n, w: Math.round((100 * it.score) / k) }));
+    }
+  }
+  return out;
+}
+
+export const STATS = { w01, w02, w03, w04, w05, w06, w07, w08, w09 };

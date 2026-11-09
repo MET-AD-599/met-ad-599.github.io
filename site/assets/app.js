@@ -48,7 +48,7 @@ export async function call(route, args = {}) {
 // ---- routes: [method, pattern, spec] -----------------------------------------------------------------
 // spec.rpc  : the app.r_<rpc> function to call      spec.tpl : template to render with its result
 // spec.prep : extra context derived in the browser   spec.download : turns the result into a file
-const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07" }[slug]);
+const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07", w08: "w08", w09: "w09" }[slug]);
 const ROUTES = [
   ["GET", "/", { rpc: "home", tpl: "index.html" }],
   ["GET", "/login", { rpc: "me", tpl: "login.html", prep: (c, p, q) => ({ username: q.username || "" }) }],
@@ -72,6 +72,20 @@ const ROUTES = [
   ["GET", "/admin/w07/teamview", { rpc: "admin_w07_teamview", tpl: "w07/teams.html" }],
   ["GET", "/admin/w07/teams.csv", { rpc: "admin_w07_teamview", download: (c) => file("ad599_term_project_teams.csv", "text/csv",
     toCSV(c.rows.map((r) => Object.fromEntries(TEAM_COLS.map((k) => [k, r[k]]))))) }],
+  // w08 instructor pages
+  ["GET", "/admin/w08/analytics", { rpc: "admin_data", args: () => ({ slug: "w08" }), tpl: "w08/analytics.html",
+    prep: (c, p, q) => ({ s: STATS.w08(c, q), mod: { TITLE: c.title } }) }],
+  ["GET", "/admin/w08/control", { rpc: "admin_w08_control", tpl: "w08/control.html" }],
+  ["POST", "/admin/w08/section", { rpc: "admin_w08_section" }],
+  ["POST", "/admin/w08/doclock", { rpc: "admin_w08_doclock" }],
+  ["GET", "/admin/w08/docs", { rpc: "admin_w08_docs", tpl: "w08/docs.html", prep: docsPrep }],
+  // w09 instructor pages
+  ["GET", "/admin/w09/analytics", { rpc: "admin_data", args: () => ({ slug: "w09" }), tpl: "w09/analytics.html",
+    prep: (c, p, q) => ({ s: STATS.w09(c, q), mod: { TITLE: c.title } }) }],
+  ["GET", "/admin/w09/control", { rpc: "admin_w09_control", tpl: "w09/control.html" }],
+  ["POST", "/admin/w09/section", { rpc: "admin_w09_section" }],
+  // term project answer key (admin only; data pushed by tools/build_project_key.py)
+  ["GET", "/admin/project/key", { rpc: "admin_project_key", args: (p, q) => ({ team: q.team }), tpl: "admin/project_key.html" }],
   ["GET", "/admin/:slug/", { rpc: "admin_submissions", tpl: "admin/submissions.html",
     prep: (c) => ({ mod: { TITLE: c.title }, columns: c.columns }) }],
   ["POST", "/admin/:slug/delete/:row_id", { rpc: "admin_delete_row" }],
@@ -123,7 +137,40 @@ const ROUTES = [
 
   ["GET", "/w07/", { rpc: "w07_index", tpl: "w07/index.html", prep: w07Prep }],
   ["POST", "/w07/save", { rpc: "w07_save" }],
+
+  ["GET", "/w08/", { rpc: "w08_index", tpl: "w08/index.html", prep: w07Prep }],
+  ["POST", "/w08/save", { rpc: "w08_save" }],
+  ["GET", "/w08/doc", { rpc: "w08_doc", tpl: "w08/doc.html", prep: docPrep }],
+  ["POST", "/w08/doc/save", { rpc: "w08_doc_save" }],
+
+  ["GET", "/w09/", { rpc: "w09_index", tpl: "w09/index.html", prep: w09Prep }],
+  ["POST", "/w09/save", { rpc: "w09_save" }],
 ];
+
+// w08 Team Working Document: each section's fields with their saved values, ready for the template
+function docSecs(session, data, members, project) {
+  return ((session && session.sections) || []).map((sec) => {
+    const d = (data && data[sec.id]) || {};
+    return {
+      id: sec.id, title: sec.title, by: d._by || "", at: d._at || "",
+      fields: sec.fields.map((f) => {
+        const v = d[f.id];
+        const picked = Array.isArray(v) ? v : [];
+        const isPick = f.type === "member" || f.type === "members";
+        const opts = isPick ? members.map((m) => ({ username: m.username, name: m.name,
+          on: f.type === "members" ? picked.includes(m.username) : v === m.username })) : [];
+        const shown = f.type === "members" ? members.filter((m) => picked.includes(m.username)).map((m) => m.name).join(", ")
+          : f.type === "member" ? ((members.find((m) => m.username === v) || {}).name || "") : (typeof v === "string" ? v : "");
+        const qtext = f.question !== undefined && project && project.questions ? project.questions[f.question] || "" : "";
+        return { ...f, val: typeof v === "string" ? v : "", opts, shown, qtext };
+      }),
+    };
+  });
+}
+function docPrep(c) { return { secs: docSecs(c.session, c.data, c.members || [], c.project) }; }
+function docsPrep(c) {
+  return { tdocs: (c.teams || []).map((t) => ({ ...t, secs: docSecs(c.session, t.data, t.members || [], t.project) })) };
+}
 
 // w07: each item gets its saved value, and choice items get [{text, on}] so the template stays simple
 function w07Prep(c) {
@@ -140,6 +187,19 @@ function w07Prep(c) {
     }),
   }));
   return { secs };
+}
+
+// w09: as w07, plus rank items get their saved order (or the original order if not ranked yet)
+function w09Prep(c) {
+  const r = w07Prep(c);
+  r.secs = r.secs.map((s) => ({ ...s, items: s.items.map((it) => {
+    if (it.type !== "rank") return it;
+    let order = [];
+    try { order = JSON.parse(it.val || "[]"); } catch { order = []; }
+    const ok = Array.isArray(order) && order.length === it.options.length && it.options.every((o) => order.includes(o));
+    return { ...it, order: ok ? order : it.options, ranked: ok, order_json: JSON.stringify(ok ? order : it.options) };
+  }) }));
+  return r;
 }
 
 // column order for /admin/w07/teams.csv
@@ -203,6 +263,12 @@ const ENDPOINTS = {
   "admin.w07_live": "/admin/w07/analytics", "admin.w07_control": "/admin/w07/control",
   "admin.w07_section": "/admin/w07/section", "admin.w07_teams": "/admin/w07/teams",
   "admin.w07_teamview": "/admin/w07/teamview", "admin.w07_teams_csv": "/admin/w07/teams.csv",
+  "week08.index": "/w08/", "week08.save": "/w08/save", "week08.doc": "/w08/doc", "week08.doc_save": "/w08/doc/save",
+  "admin.w08_live": "/admin/w08/analytics", "admin.w08_control": "/admin/w08/control",
+  "admin.w08_section": "/admin/w08/section", "admin.w08_doclock": "/admin/w08/doclock", "admin.w08_docs": "/admin/w08/docs",
+  "week09.index": "/w09/", "week09.save": "/w09/save",
+  "admin.w09_live": "/admin/w09/analytics", "admin.w09_control": "/admin/w09/control", "admin.w09_section": "/admin/w09/section",
+  "admin.project_key": "/admin/project/key",
 };
 
 function url_for(endpoint, kw = {}) {

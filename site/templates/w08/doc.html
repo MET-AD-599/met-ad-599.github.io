@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Team Working Document{% endblock %}
+{% block head %}
+<style>
+  .proj h2 { margin: 0 0 2px; font-size: 1.2rem; }
+  .proj ol { margin: 8px 0 0; padding-left: 22px; }
+  .proj li { margin: 3px 0; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+  .tabs a { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; text-decoration: none; color: var(--ink); background: #fff; font-size: .9rem; }
+  .tabs a.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  h2.sec { font-size: 1.1rem; margin: 0 0 4px; scroll-margin-top: 12px; }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .savednote { color: #1f7a4a; font-weight: 600; font-size: .9rem; margin-left: 8px; }
+  .members label { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; margin: 4px 6px 4px 0; background: #fff; cursor: pointer; }
+  .qtext { font-weight: 400; color: var(--muted); }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  button.primary { margin-top: 14px; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Team Working Document</h1><span class="course">{{ course }}</span></header>
+<p class="muted" style="margin:0"><a href="{{ url_for('week08.index') }}">← Lecture 8 checkpoints</a></p>
+{% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash">{{ m }}</p>{% endfor %}
+
+{% if not team %}
+<div class="card"><strong>You are not on a team list yet.</strong> <span class="muted">Please check with your instructor, who will add you to a team.</span></div>
+{% else %}
+<div class="card proj">
+  <h2>Team {{ team }} · {{ project.title }}</h2>
+  <div class="meta">Data: {{ project.data }} · Team: {% for m in members %}{{ m.name }}{% if m.is_me %} (you){% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</div>
+  <ol>{% for q in project.questions %}<li><strong>Q{{ loop.index }}</strong> · {{ q }}</li>{% endfor %}</ol>
+</div>
+
+{% if sessions|length > 1 %}
+<div class="tabs">{% for x in sessions %}<a href="{{ url_for('week08.doc', session=x.id) }}" class="{{ 'on' if x.id == session.id else '' }}">{{ x.date }}</a>{% endfor %}</div>
+{% endif %}
+
+<div class="card">
+  <strong>{{ session.title }}</strong>
+  <p class="muted" style="margin:4px 0 0">One document per team. Anyone on the team can edit it; each section saves on its own, so you can split the sections between you. Your instructor reads it after class.{% if not doc_open %} <strong>The documents are locked now: read only.</strong>{% endif %}</p>
+</div>
+
+{% for sec in secs %}
+<form method="post" action="{{ url_for('week08.doc_save') }}" class="card" id="doc-{{ sec.id }}">
+  <input type="hidden" name="session" value="{{ session.id }}">
+  <input type="hidden" name="sec" value="{{ sec.id }}">
+  <h2 class="sec">{{ loop.index }} · {{ sec.title }}{% if saved == sec.id %}<span class="savednote">✓ Saved</span>{% endif %}</h2>
+  <div class="meta">{% if sec.by %}Last saved by {{ sec.by }} at {{ sec.at.slice(11, 16) }} UTC{% else %}Not saved yet{% endif %}</div>
+  <fieldset{% if not doc_open %} disabled{% endif %}>
+  {% for f in sec.fields %}
+    <label class="q">{{ f.label }}{% if f.qtext %} <span class="qtext">· {{ f.qtext }}</span>{% endif %}{% if f.hint %}<br><span class="hint">{{ f.hint }}</span>{% endif %}</label>
+    {% if f.type == 'text' %}
+      <input type="text" name="f_{{ f.id }}" value="{{ f.val }}" maxlength="4000">
+    {% elif f.type == 'textarea' %}
+      <textarea name="f_{{ f.id }}" maxlength="4000" rows="4">{{ f.val }}</textarea>
+    {% elif f.type == 'member' %}
+      <select name="f_{{ f.id }}">
+        <option value="">(choose a teammate)</option>
+        {% for o in f.opts %}<option value="{{ o.username }}"{% if o.on %} selected{% endif %}>{{ o.name }}</option>{% endfor %}
+      </select>
+    {% else %}
+      <div class="members">{% for o in f.opts %}<label><input type="checkbox" name="f_{{ f.id }}" value="{{ o.username }}"{% if o.on %} checked{% endif %}>{{ o.name }}</label>{% endfor %}</div>
+    {% endif %}
+  {% endfor %}
+  {% if doc_open %}<button class="primary" type="submit">Save section {{ loop.index }}</button>{% endif %}
+  </fieldset>
+</form>
+{% endfor %}
+{% endif %}
+{% endblock %}

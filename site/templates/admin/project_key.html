@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Term project answer key{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 4px; }
+  .tabs a { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; text-decoration: none; color: var(--ink); background: #fff; font-size: .9rem; }
+  .tabs a.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tabs a.bad { border-style: dashed; color: var(--muted); }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .key h2 { margin: 0 0 4px; font-size: 1.15rem; }
+  .key h3 { margin: 18px 0 6px; font-size: 1rem; }
+  .answer { font-weight: 600; margin: 4px 0 10px; }
+  .scroll { overflow-x: auto; margin: 6px 0 10px; }
+  .scroll table td, .scroll table th { white-space: nowrap; font-size: .82rem; padding: 3px 8px; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .pill.bad { background: #f6d8d6; color: #8a1c14; }
+  .warn { border-left: 4px solid var(--accent); }
+  pre.trace { white-space: pre-wrap; font-size: .75rem; color: var(--muted); }
+  @media print { .tabs, .noprint { display: none; } .key { break-inside: avoid-page; } }
+</style>
+{% endblock %}
+{% macro checks(items) %}
+<table class="kv">
+  {% for c in items %}
+  <tr><th>{{ c.name }}</th><td>{{ c.value if c.value !== null else '-' }}{% if c.ok === true %} <span class="pill ok">pass</span>{% elif c.ok === false %} <span class="pill bad">check</span>{% endif %}{% if c.note %} <span class="meta">{{ c.note }}</span>{% endif %}</td></tr>
+  {% endfor %}
+</table>
+{% endmacro %}
+{% macro grid(t) %}
+<p class="meta" style="margin:10px 0 0">{{ t.title }}{% if t.note %} · {{ t.note }}{% endif %}</p>
+<div class="scroll"><table>
+  <tr>{% for c in t.columns %}<th>{{ c }}</th>{% endfor %}</tr>
+  {% for r in t.rows %}<tr>{% for v in r %}<td class="{{ 'n' if v is number else '' }}">{{ v if v !== null else '-' }}</td>{% endfor %}</tr>{% endfor %}
+</table></div>
+{% endmacro %}
+{% block body %}
+<header><h1>Term project answer key</h1><span class="course">{{ course }}</span></header>
+<p class="meta noprint" style="margin:0">Admin only: do not project. {% if built %}Built {{ built_at.slice(0, 16).replace('T', ' ') }} UTC from the source files in <code>prod/data/project_key/source</code>.{% endif %}</p>
+{% if not built %}
+<div class="card warn"><p style="margin:0">No answer key yet. Put the source files in <code>prod/data/project_key/source</code> and run <code>build_project_key.bat</code>.</p></div>
+{% else %}
+<div class="tabs">{% for x in teams %}<a href="{{ url_for('admin.project_key', team=x.id) }}" class="{{ 'on' if x.id == team_id else '' }} {{ '' if x.status == 'ok' else 'bad' }}" title="{{ x.title }}">Team {{ x.id }}</a>{% endfor %}</div>
+{% if not team %}
+<div class="card warn"><p style="margin:0">Team {{ team_id }} has not been built.</p></div>
+{% elif team.status != 'ok' %}
+<div class="card warn key"><h2>Team {{ team.team }} · {{ team.title }}</h2>
+  <p style="margin:0">{{ 'Missing data' if team.status == 'missing' else 'Build failed' }}: {{ team.message }}</p>
+  {% if team.trace %}<pre class="trace">{{ team.trace }}</pre>{% endif %}
+  <p class="meta">Add the file, then run <code>build_project_key.bat {{ team.team }}</code>.</p></div>
+{% else %}
+<div class="card key">
+  <h2>Team {{ team.team }} · {{ team.title }}</h2>
+  <div class="meta">{{ team.data }} · built {{ team.built_at.slice(0, 16).replace('T', ' ') }} UTC</div>
+  <h3>Shared definition</h3><p style="margin:0">{{ team.shared.definition }}</p>
+  <h3>Baseline</h3>{{ checks(team.shared.baseline) }}
+  <h3>Quality checks</h3>{{ checks(team.shared.checks) }}
+  {% if team.shared.i5_baseline %}<h3>Model step (I5): the baseline every leaderboard must show</h3>{{ checks(team.shared.i5_baseline) }}{% endif %}
+</div>
+{% for q in team.questions %}
+<div class="card key">
+  <h2>{{ q.q }} · {{ q.title }}</h2>
+  <p class="answer">{{ q.answer }}</p>
+  {% for t in q.tables %}{{ grid(t) }}{% endfor %}
+  {% if q.checks|length %}<h3>Checks</h3>{{ checks(q.checks) }}{% endif %}
+  {% if q.sensitivity %}<h3>Sensitivity</h3><p style="margin:0">{{ q.sensitivity }}</p>{% endif %}
+</div>
+{% endfor %}
+{% endif %}
+{% endif %}
+{% endblock %}

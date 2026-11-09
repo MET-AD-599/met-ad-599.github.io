@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Team Working Documents{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .teamdoc h2 { margin: 0 0 2px; font-size: 1.2rem; }
+  .teamdoc h3 { font-size: 1rem; margin: 16px 0 4px; }
+  .meta { color: var(--muted); font-size: .85rem; }
+  .teamdoc table th { width: 32%; vertical-align: top; }
+  .teamdoc td { white-space: pre-wrap; }
+  .empty { color: var(--muted); }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+  .tabs a { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; text-decoration: none; color: var(--ink); background: #fff; font-size: .9rem; }
+  .tabs a.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  @media print { .teamdoc { break-before: page; } }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Team Working Documents · {{ session.title }}</h1><span class="course">{{ course }}</span></header>
+<p class="muted noprint" style="margin:0"><a href="{{ url_for('admin.w08_control') }}">control</a> · {% if doc_open %}open for editing{% else %}locked{% endif %} · print this page for a record</p>
+{% if sessions|length > 1 %}
+<div class="tabs noprint">{% for x in sessions %}<a href="{{ url_for('admin.w08_docs', session=x.id) }}" class="{{ 'on' if x.id == session.id else '' }}">{{ x.date }}</a>{% endfor %}</div>
+{% endif %}
+{% if teams|length == 0 %}<div class="card"><p class="empty" style="margin:0">No teams loaded. Run <code>sync_content.bat</code>.</p></div>{% endif %}
+{% for t in tdocs %}
+<div class="card teamdoc">
+  <h2>Team {{ t.team }} · {{ t.project.title if t.project else '' }}</h2>
+  <div class="meta">{% for m in t.members %}{{ m.name }}{% if not loop.last %}, {% endif %}{% endfor %}{% if t.updated_by %} · last saved by {{ t.updated_by }} at {{ t.updated_at.slice(11, 16) }} UTC{% else %} · nothing saved yet{% endif %}</div>
+  {% for sec in t.secs %}
+  <h3>{{ loop.index }} · {{ sec.title }} {% if sec.by %}<span class="meta">({{ sec.by }}, {{ sec.at.slice(11, 16) }} UTC)</span>{% else %}<span class="meta">(not saved)</span>{% endif %}</h3>
+  <table>
+    {% for f in sec.fields %}
+    <tr><th>{{ f.label }}{% if f.qtext %}<br><span class="meta">{{ f.qtext }}</span>{% endif %}</th><td>{{ f.shown or '' }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

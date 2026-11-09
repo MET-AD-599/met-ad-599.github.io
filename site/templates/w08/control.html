@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Lecture 8 · control{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .secs td, .secs th { vertical-align: middle; }
+  .secs form, .ctl form { display: inline; margin: 0; }
+  .ctl { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .warn { color: var(--accent); font-weight: 600; }
+  .teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 10px; }
+  .teams div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: .9rem; }
+  .low { color: var(--accent); }
+  .qs { width: 100%; }
+  .qs td, .qs th { vertical-align: middle; }
+  .qs form { display: inline; margin: 0; }
+  .qs .sechead td { background: var(--soft, #f3f4f6); padding-top: 10px; }
+  .qs tr.off td:nth-child(2) { color: var(--muted); }
+  .qs .qid { display: inline-block; min-width: 2.6em; font-weight: 700; }
+  .qs .tgl { min-width: 7.5em; }
+  .qs .tgl.live { background: #16a34a; border-color: #16a34a; color: #fff; }
+  .right { text-align: right; white-space: nowrap; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Lecture 8 · control</h1><span class="course">{{ course }}</span></header>
+<p class="muted" style="margin:0">Not for projecting: this page shows names. Project <a href="{{ url_for('admin.w08_live') }}">the live view</a> instead.</p>
+{% set msgs = get_flashed_messages() %}{% for m in msgs %}<p class="flash">{{ m }}</p>{% endfor %}
+
+<div class="card">
+  <div class="ctl">
+    <strong>Activity</strong>
+    {% if open %}<span class="pill ok">open</span>{% else %}<span class="pill">closed</span>{% endif %}
+    <form method="post" action="{{ url_for('admin.toggle', slug='w08') }}"><button class="btn">{{ 'Close the activity' if open else 'Reopen the activity' }}</button></form>
+    <span class="muted">Closing locks every checkpoint answer. The Team Working Documents have their own lock below.</span>
+    <span style="flex:1"></span>
+    <a href="{{ url_for('admin.w08_live') }}">live view</a>
+    <a href="{{ url_for('admin.submissions', slug='w08') }}">submissions · seed · reset</a>
+    <a href="{{ url_for('admin.export_csv', slug='w08') }}">⬇ csv</a>
+    <a href="{{ url_for('admin.export_json', slug='w08') }}">{ } json</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ctl" style="margin-bottom:8px">
+    <strong>Questions</strong>
+    <span class="muted">{{ n_items_open }} of {{ n_items }} released</span>
+    <span style="flex:1"></span>
+    <form method="post" action="{{ url_for('admin.w08_section') }}"><input type="hidden" name="action" value="all"><button class="link">release all</button></form>
+    <form method="post" action="{{ url_for('admin.w08_section') }}" onsubmit="return confirm('Hide every question from students? Answers are kept.')"><input type="hidden" name="action" value="none"><button class="link">hide all</button></form>
+  </div>
+  <table class="qs">
+    <tr><th></th><th>question</th><th>type</th><th class="num">answers</th><th></th></tr>
+    {% for q in questions %}
+    {% if q.first_in_section %}
+    <tr class="sechead"><td colspan="4"><strong>Checkpoint {{ q.section }}</strong> · {{ q.section_title }}</td>
+      <td class="right">
+        <form method="post" action="{{ url_for('admin.w08_section') }}"><input type="hidden" name="sec" value="{{ q.section }}"><input type="hidden" name="action" value="open"><button class="link">release all {{ q.section }}</button></form>
+        · <form method="post" action="{{ url_for('admin.w08_section') }}"><input type="hidden" name="sec" value="{{ q.section }}"><input type="hidden" name="action" value="close"><button class="link">hide all {{ q.section }}</button></form>
+      </td></tr>
+    {% endif %}
+    <tr class="{{ 'on' if q.open else 'off' }}">
+      <td>
+        <form method="post" action="{{ url_for('admin.w08_section') }}"><input type="hidden" name="item" value="{{ q.id }}"><input type="hidden" name="action" value="{{ 'close' if q.open else 'open' }}">
+          <button class="btn tgl {{ 'live' if q.open else '' }}">{{ 'Live · hide' if q.open else 'Release' }}</button></form>
+      </td>
+      <td><span class="qid">{{ q.id }}</span> {{ q.prompt }}</td>
+      <td class="muted">{{ 'poll' if q.kind == 'poll' else 'check' }}{% if q.lo %} · {{ q.lo }}{% endif %}</td>
+      <td class="num">{{ q.n_answers }}</td>
+      <td class="right"><a href="{{ url_for('admin.w08_live', only=q.id) }}">live</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <div class="ctl">
+    <strong>Team Working Documents</strong>
+    {% if doc_open %}<span class="pill ok">open for editing</span>{% else %}<span class="pill">locked</span>{% endif %}
+    <a href="{{ url_for('admin.w08_docs') }}">read every team's document</a>
+    {% if doc_open %}
+    <form method="post" action="{{ url_for('admin.w08_doclock') }}" onsubmit="return confirm('Lock every Team Working Document? Students can still read them.')"><input type="hidden" name="action" value="lock"><button class="btn">Lock documents</button></form>
+    {% else %}
+    <form method="post" action="{{ url_for('admin.w08_doclock') }}"><input type="hidden" name="action" value="unlock"><button class="btn">Unlock documents</button></form>
+    {% endif %}
+  </div>
+  <table style="margin-top:8px">
+    <tr><th>session</th><th class="num">team</th><th class="num">sections saved</th><th>last saved by</th><th>at (UTC)</th></tr>
+    {% for d in docs %}
+    <tr><td>{{ d.session }}</td><td class="num">{{ d.team }}</td><td class="num">{{ d.n_sections }}</td><td>{{ d.updated_by }}</td><td>{{ (d.updated_at or '-').slice(11, 16) }}</td></tr>
+    {% endfor %}
+    {% if docs|length == 0 %}<tr><td colspan="5" class="muted">No team has saved anything yet.</td></tr>{% endif %}
+  </table>
+</div>
+
+<div class="card" style="overflow-x:auto">
+  <strong>Who has answered</strong> <span class="muted">answered counts only the {{ n_items_open }} released questions</span>
+  <table style="margin-top:8px">
+    <tr><th>student</th><th>username</th><th class="num">team</th><th class="num">answered</th><th class="num">checks right</th><th>last answer (UTC)</th></tr>
+    {% for p in people %}
+    <tr>
+      <td>{{ p.first_name }} {{ p.last_name }}</td><td class="muted">{{ p.username }}</td>
+      <td class="num">{% if p.team %}{{ p.team }}{% else %}<span class="low">none</span>{% endif %}</td>
+      <td class="num{% if n_items_open and p.n_done < n_items_open %} low{% endif %}">{{ p.n_done }}/{{ n_items_open }}</td>
+      <td class="num">{{ p.n_right }}/{{ p.n_checks }}</td>
+      <td>{{ (p.last or '-').slice(11, 16) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

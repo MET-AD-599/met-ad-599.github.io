@@ -3,6 +3,9 @@
 {% block wrapclass %}wide{% endblock %}
 {% block head %}
 <style>
+  .pagenav { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 12px; }
+  .pagenav a { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font-weight: 600; color: var(--ink); text-decoration: none; }
+  .pagenav a.on { background: var(--ink); color: #fff; border-color: var(--ink); }
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
   .tabs button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 600; cursor: pointer; }
   .tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
@@ -40,6 +43,10 @@
 {% endblock %}
 {% block body %}
 <header><h1>Week 10 · Databases</h1><span class="course">{{ course }}</span></header>
+<nav class="pagenav">
+  <a href="{{ url_for('week10.index') }}" class="on">Schemas</a>
+  <a href="{{ url_for('week10.etl') }}">Load pipeline</a>
+</nav>
 
 <div class="card">
   <p style="margin:0"><strong>chinook.db</strong>: the digital music store we query in Lecture 10.

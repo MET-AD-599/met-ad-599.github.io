@@ -147,8 +147,9 @@ const ROUTES = [
   ["GET", "/w09/", { rpc: "w09_index", tpl: "w09/index.html", prep: w09Prep }],
   ["POST", "/w09/save", { rpc: "w09_save" }],
 
-  // w10: databases page (ERDs, table list) with one question: which date format do you use? Saving needs a sign-in
-  ["GET", "/w10/", { rpc: "w10_index", tpl: "w10/index.html" }],
+  // w10: databases pages (ERDs and table list, load pipeline) and one question, which date format do you use? (saving needs a sign-in)
+  ["GET", "/w10/", { rpc: "me", tpl: "w10/index.html" }],
+  ["GET", "/w10/date", { rpc: "w10_index", tpl: "w10/date.html" }],
   ["POST", "/w10/save", { rpc: "w10_save" }],
   ["GET", "/w10/etl", { rpc: "me", tpl: "w10/etl.html" }],
 ];
@@ -273,7 +274,7 @@ const ENDPOINTS = {
   "admin.w08_live": "/admin/w08/analytics", "admin.w08_control": "/admin/w08/control",
   "admin.w08_section": "/admin/w08/section", "admin.w08_doclock": "/admin/w08/doclock", "admin.w08_docs": "/admin/w08/docs",
   "week09.index": "/w09/", "week09.save": "/w09/save",
-  "week10.index": "/w10/", "week10.save": "/w10/save", "week10.etl": "/w10/etl",
+  "week10.index": "/w10/", "week10.date": "/w10/date", "week10.save": "/w10/save", "week10.etl": "/w10/etl",
   "admin.w09_live": "/admin/w09/analytics", "admin.w09_control": "/admin/w09/control", "admin.w09_section": "/admin/w09/section",
   "admin.project_key": "/admin/project/key",
 };

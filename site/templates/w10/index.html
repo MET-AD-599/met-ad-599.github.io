@@ -3,20 +3,10 @@
 {% block wrapclass %}wide{% endblock %}
 {% block head %}
 <style>
-  /* date format question */
-  .qcard h2 { margin: 0 0 4px; font-size: 1.15rem; }
-  .fmts { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin: 12px 0; }
-  .fmt { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: #fff; cursor: pointer; }
-  .fmt:has(input:checked) { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink) inset; }
-  .fmt input { margin-top: 4px; }
-  .fmt b { font-family: ui-monospace, monospace; font-size: .95rem; display: block; }
-  .fmt .ex { font-size: .85rem; }
-  .fmt .where { font-size: .75rem; color: var(--muted); display: block; }
-  .fmt input[type=text] { margin-top: 4px; width: 100%; box-sizing: border-box; padding: 4px 6px; font: inherit; font-size: .9rem; }
-  .qcard .mine { margin: 0; }
   .pagenav { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 12px; }
   .pagenav a { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font-weight: 600; color: var(--ink); text-decoration: none; }
   .pagenav a.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pagenav a.ask:not(.on) { border-color: #cc0000; color: #cc0000; }
   .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
   .tabs button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 600; cursor: pointer; }
   .tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
@@ -60,6 +50,7 @@
 {% block body %}
 <header><h1>Week 10 · Databases</h1><span class="course">{{ course }}</span></header>
 <nav class="pagenav">
+  <a href="{{ url_for('week10.date') }}" class="ask">ANSWER THIS DATE QUESTION</a>
   <a href="{{ url_for('week10.index') }}" class="on">Schemas</a>
   <a href="{{ url_for('week10.etl') }}">Load pipeline</a>
 </nav>
@@ -69,32 +60,6 @@
   <strong>class_app.db</strong>: this class app's activities, Week 1 to Week 9, redesigned in 3NF and as a star schema.
   Both files are on Blackboard. Click a table in a diagram or in the list to see its columns, keys and first rows.</p>
   <p class="note" style="margin-top:6px">Every student and every answer in class_app.db is invented. The activities, task skills and checkpoint questions are real.</p>
-</div>
-
-<div class="card qcard" id="datefmt">
-  <h2>Which date format do you use or prefer?</h2>
-  <p class="muted" style="margin:0">Each example is today's date, Monday 16 November 2026. Pick the one you write most often, or type your own.</p>
-  {% if saved and mine %}<p class="flash" style="margin:10px 0 0">Saved: <b>{{ mine }}</b>. You can change it until the question closes.</p>
-  {% elif mine %}<p class="mine" style="margin-top:10px">Your answer: <b>{{ mine }}</b></p>{% endif %}
-  {% if not student %}
-  <p style="margin:12px 0 0"><a class="btn" href="{{ url_for('auth.login') }}?next=/w10/">Sign in</a> with your BU username to answer.</p>
-  {% elif not open %}
-  <p class="muted" style="margin:12px 0 0">This question is closed.</p>
-  {% else %}
-  {% set other = mine.slice(7) if mine and mine.startsWith('Other: ') else '' %}
-  <form method="post" action="{{ url_for('week10.save') }}">
-    <div class="fmts">
-      {% for f in formats %}
-      <label class="fmt"><input type="radio" name="date_format" value="{{ f[0] }}"{% if mine == f[0] %} checked{% endif %} required>
-        <span><b>{{ f[0] }}</b><span class="ex">{{ f[1] }}</span>{% if f[2] %}<span class="where">{{ f[2] }}</span>{% endif %}</span></label>
-      {% endfor %}
-      <label class="fmt"><input type="radio" name="date_format" value="Other" id="fmtOther"{% if other %} checked{% endif %}>
-        <span style="flex:1"><b>Other</b><input type="text" name="other" maxlength="40" placeholder="e.g. YYYY.MM.DD" value="{{ other }}"
-          onfocus="document.getElementById('fmtOther').checked = true"></span></label>
-    </div>
-    <button class="primary" type="submit">{{ 'Change my answer' if mine else 'Save my answer' }}</button>
-  </form>
-  {% endif %}
 </div>
 
 <div class="card">

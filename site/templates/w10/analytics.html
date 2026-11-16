@@ -30,7 +30,7 @@
 {% else %}
 <div class="card">
   <p class="big">{{ s.n_kinds }} different formats from {{ s.n }} students</p>
-  <p class="muted" style="margin:4px 0 0">Most common: <b>{{ s.top.fmt }}</b> ({{ s.top.n }}, {{ s.top.pct }}%). Only the formats that start with the year (YYYY-MM-DD, YYYY/MM/DD, YYYYMMDD) sort correctly as text.</p>
+  <p class="muted" style="margin:4px 0 0">Most common: <b>{{ s.top.fmt }}</b> ({{ s.top.n }}, {{ s.top.pct }}%). Only year-first dates (YYYY-MM-DD) sort correctly as text.</p>
 </div>
 <div class="card">
   <div class="bars">

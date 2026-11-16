@@ -7,6 +7,7 @@
   .pagenav { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 4px 0 12px; }
   .pagenav a, .seg button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 600; cursor: pointer; color: var(--ink); text-decoration: none; }
   .pagenav a.on, .seg button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pagenav a.ask:not(.on) { border-color: #cc0000; color: #cc0000; }
   .seg { display: inline-flex; gap: 6px; flex-wrap: wrap; }
   .bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
   .bar .lbl { color: var(--muted); font-size: .85rem; font-weight: 600; }
@@ -96,6 +97,7 @@
 {% block body %}
 <header><h1>Week 10 · Load pipeline</h1><span class="course">{{ course }}</span></header>
 <nav class="pagenav">
+  <a href="{{ url_for('week10.date') }}" class="ask">ANSWER THIS DATE QUESTION</a>
   <a href="{{ url_for('week10.index') }}">Schemas</a>
   <a href="{{ url_for('week10.etl') }}" class="on">Load pipeline</a>
 </nav>

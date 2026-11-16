@@ -370,7 +370,7 @@ function w09(d, q = {}) {
   return out;
 }
 
-// w10: one question (date format). Count per format, in the order students see them; "Other: ..." answers grouped
+// w10: one question (date format). Count per format, in the order students see them
 function w10(d) {
   const answers = d.answers;
   const n = answers.length;
@@ -380,8 +380,8 @@ function w10(d) {
     if (count.has(a.answer)) count.set(a.answer, count.get(a.answer) + 1);
     else others.push(a.answer.replace(/^Other: /, ""));
   }
-  const rows = d.formats.map((f) => ({ fmt: f[0], ex: f[1], where: f[2], n: count.get(f[0]) }));
-  rows.push({ fmt: "Other", ex: others.join(" · "), where: "", n: others.length });
+  const rows = d.formats.map((f) => ({ fmt: f[0], ex: f[1], n: count.get(f[0]) }));
+  if (others.length) rows.push({ fmt: "Other", ex: others.join(" · "), n: others.length });   // only answers saved before Other was removed
   const max = Math.max(1, ...rows.map((r) => r.n));
   for (const r of rows) { r.pct = n ? Math.round((100 * r.n) / n) : 0; r.w = Math.round((100 * r.n) / max); }
   const ranked = [...rows].filter((r) => r.n > 0).sort((x, y) => y.n - x.n);

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 10 · Date formats{% endblock %}
+{% block head %}
+<style>
+  .bars { margin-top: 6px; }
+  .bar { display: grid; grid-template-columns: 150px 1fr 70px; gap: 12px; align-items: center; padding: 6px 0; border-top: 1px solid var(--line); }
+  .bar:first-child { border-top: 0; }
+  .bar .fmt b { font-family: ui-monospace, monospace; display: block; }
+  .bar .fmt span { font-size: .8rem; color: var(--muted); }
+  .bar .track { background: #eef0f3; border-radius: 6px; height: 22px; overflow: hidden; }
+  .bar .fill { background: #3b6fd1; height: 100%; border-radius: 6px; }
+  .bar.zero { opacity: .45; }
+  .bar .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bar .num small { color: var(--muted); display: block; }
+  .others { font-size: .85rem; color: var(--muted); grid-column: 2 / 4; }
+  .big { font-size: 1.6rem; font-weight: 700; margin: 0; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Which date format do you use?</h1><span class="course">{{ course }}</span></header>
+<div class="toolbar">
+  <span class="muted">{{ s.n }} answer{{ '' if s.n == 1 else 's' }} · {{ s.n_roster }} students on the roster · {{ 'open' if open else 'closed' }}</span>
+  <span style="flex:1"></span>
+  <a href="{{ url_for('admin.analytics', slug=slug) }}">↻ refresh</a>
+  <a href="{{ url_for('admin.submissions', slug=slug) }}">submissions</a>
+  <a href="{{ url_for('admin.export_csv', slug=slug) }}">⬇ csv</a>
+</div>
+{% if s.n == 0 %}
+<div class="card"><p>Nobody has answered on <strong>/w10/</strong> yet.</p></div>
+{% else %}
+<div class="card">
+  <p class="big">{{ s.n_kinds }} different formats from {{ s.n }} students</p>
+  <p class="muted" style="margin:4px 0 0">Most common: <b>{{ s.top.fmt }}</b> ({{ s.top.n }}, {{ s.top.pct }}%). Only the formats that start with the year (YYYY-MM-DD, YYYY/MM/DD, YYYYMMDD) sort correctly as text.</p>
+</div>
+<div class="card">
+  <div class="bars">
+  {% for r in s.rows %}
+    <div class="bar{% if r.n == 0 %} zero{% endif %}">
+      <div class="fmt"><b>{{ r.fmt }}</b><span>{{ r.ex if r.fmt != 'Other' else '' }}</span></div>
+      <div class="track"><div class="fill" style="width:{{ r.w }}%"></div></div>
+      <div class="num">{{ r.n }}<small>{{ r.pct }}%</small></div>
+      {% if r.fmt == 'Other' and r.n %}<div></div><div class="others">{{ r.ex }}</div>{% endif %}
+    </div>
+  {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

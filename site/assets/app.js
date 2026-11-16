@@ -48,10 +48,10 @@ export async function call(route, args = {}) {
 // ---- routes: [method, pattern, spec] -----------------------------------------------------------------
 // spec.rpc  : the app.r_<rpc> function to call      spec.tpl : template to render with its result
 // spec.prep : extra context derived in the browser   spec.download : turns the result into a file
-const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07", w08: "w08", w09: "w09" }[slug]);
+const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07", w08: "w08", w09: "w09", w10: "w10" }[slug]);
 const ROUTES = [
   ["GET", "/", { rpc: "home", tpl: "index.html", prep: (c) => ({   // Week 10 has no submissions table, so it is listed here, not in app.lectures
-    items: (c.items || []).some((x) => x[0] === "w10") ? c.items : [...(c.items || []), ["w10", "Lecture 10 · SQL joins, subqueries and the load pipeline", true]] }) }],
+    items: (c.items || []).some((x) => x[0] === "w10") ? c.items : [...(c.items || []), ["w10", "Week 10 · Querying with SQL", true]] }) }],
   ["GET", "/login", { rpc: "me", tpl: "login.html", prep: (c, p, q) => ({ username: q.username || "" }) }],
   ["POST", "/login", { rpc: "login", args: (p, q) => ({ next: q.next }) }],
   ["GET", "/logout", { rpc: "logout" }],
@@ -147,8 +147,9 @@ const ROUTES = [
   ["GET", "/w09/", { rpc: "w09_index", tpl: "w09/index.html", prep: w09Prep }],
   ["POST", "/w09/save", { rpc: "w09_save" }],
 
-  // w10: Chinook database reference (interactive ERD and table list), no data of its own
-  ["GET", "/w10/", { rpc: "me", tpl: "w10/index.html" }],
+  // w10: databases page (ERDs, table list) with one question: which date format do you use? Saving needs a sign-in
+  ["GET", "/w10/", { rpc: "w10_index", tpl: "w10/index.html" }],
+  ["POST", "/w10/save", { rpc: "w10_save" }],
   ["GET", "/w10/etl", { rpc: "me", tpl: "w10/etl.html" }],
 ];
 
@@ -272,7 +273,7 @@ const ENDPOINTS = {
   "admin.w08_live": "/admin/w08/analytics", "admin.w08_control": "/admin/w08/control",
   "admin.w08_section": "/admin/w08/section", "admin.w08_doclock": "/admin/w08/doclock", "admin.w08_docs": "/admin/w08/docs",
   "week09.index": "/w09/", "week09.save": "/w09/save",
-  "week10.index": "/w10/", "week10.etl": "/w10/etl",
+  "week10.index": "/w10/", "week10.save": "/w10/save", "week10.etl": "/w10/etl",
   "admin.w09_live": "/admin/w09/analytics", "admin.w09_control": "/admin/w09/control", "admin.w09_section": "/admin/w09/section",
   "admin.project_key": "/admin/project/key",
 };

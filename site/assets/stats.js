@@ -370,4 +370,22 @@ function w09(d, q = {}) {
   return out;
 }
 
-export const STATS = { w01, w02, w03, w04, w05, w06, w07, w08, w09 };
+// w10: one question (date format). Count per format, in the order students see them; "Other: ..." answers grouped
+function w10(d) {
+  const answers = d.answers;
+  const n = answers.length;
+  const count = new Map(d.formats.map((f) => [f[0], 0]));
+  const others = [];
+  for (const a of answers) {
+    if (count.has(a.answer)) count.set(a.answer, count.get(a.answer) + 1);
+    else others.push(a.answer.replace(/^Other: /, ""));
+  }
+  const rows = d.formats.map((f) => ({ fmt: f[0], ex: f[1], where: f[2], n: count.get(f[0]) }));
+  rows.push({ fmt: "Other", ex: others.join(" · "), where: "", n: others.length });
+  const max = Math.max(1, ...rows.map((r) => r.n));
+  for (const r of rows) { r.pct = n ? Math.round((100 * r.n) / n) : 0; r.w = Math.round((100 * r.n) / max); }
+  const ranked = [...rows].filter((r) => r.n > 0).sort((x, y) => y.n - x.n);
+  return { n, n_roster: d.n_roster, rows, top: ranked[0] || null, n_kinds: ranked.length, answers };
+}
+
+export const STATS = { w01, w02, w03, w04, w05, w06, w07, w08, w09, w10 };

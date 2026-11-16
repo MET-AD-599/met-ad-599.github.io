@@ -25,6 +25,11 @@
   .legend b u { color: var(--ink); }
   .legend .fk { color: #3b6fd1; }
   .note { color: var(--muted); font-size: .9rem; margin: 8px 0 0; }
+  #detail[hidden] { display: none; }
+  .dhead { display: flex; align-items: baseline; gap: 12px; }
+  .dhead button { margin-left: auto; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 5px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+  .tlist summary { cursor: pointer; font-weight: 700; font-size: 1.1rem; }
+  .tlist summary small { font-weight: 400; color: var(--muted); font-size: .9rem; margin-left: 6px; }
   #detail h2 { margin: 0 0 4px; font-size: 1.25rem; }
   #detail .meta { color: var(--muted); font-size: .9rem; margin-bottom: 10px; }
   #detail .rel a, .tlist a { color: var(--ink); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); }
@@ -1364,9 +1369,9 @@
   </div>
 </div>
 
-<div class="card" id="detail"><p class="muted" style="margin:0">Click a table to see its details here.</p></div>
+<div class="card" id="detail" hidden></div>
 
-<div class="card tlist" id="tlist"></div>
+<details class="card tlist" id="tlist"></details>
 
 {% raw %}
 <script>
@@ -1417,7 +1422,8 @@ function select(k, scroll) {
     <td class="muted">${c.notnull && !c.pk ? "required" : ""}</td></tr>`).join("");
   const head = t.cols.map((c) => `<th>${esc(c.name)}</th>`).join("");
   const rows = t.sample.map((r) => "<tr>" + r.map((v) => `<td>${v === null ? '<span class="muted">NULL</span>' : esc(v)}</td>`).join("") + "</tr>").join("");
-  detail.innerHTML = `<h2>${esc(t.name)}</h2>
+  detail.hidden = false;
+  detail.innerHTML = `<div class="dhead"><h2>${esc(t.name)}</h2><button type="button" id="detailHide">Hide</button></div>
     <div class="meta">${esc(t.dbfile)} · ${t.rows.toLocaleString()} rows · ${t.cols.length} columns</div>
     <p style="margin:0 0 6px">${esc(t.desc)}</p>
     <p class="rel muted" style="margin:0">${t.parents.length ? "Points to: " + t.parents.map(link).join(", ") : ""}
@@ -1428,8 +1434,13 @@ function select(k, scroll) {
   if (scroll) detail.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function hideDetail() {
+  current = null; detail.hidden = true; mark();
+  document.querySelectorAll("#tlist tr.cur").forEach((tr) => tr.classList.remove("cur"));
+}
+
 function list() {
-  document.getElementById("tlist").innerHTML = "<h2 style=\"margin:0;font-size:1.1rem\">All tables</h2>" + DATA.groups.map(([g, label, keys]) =>
+  document.getElementById("tlist").innerHTML = `<summary>All tables<small>${Object.keys(T).length} tables in 2 databases · click to show or hide</small></summary>` + DATA.groups.map(([g, label, keys]) =>
     `<h3>${esc(label)}</h3><table><tr><th>Table</th><th class="num">Rows</th><th class="num">Columns</th><th>What one row is</th></tr>` +
     keys.map((k) => `<tr data-t="${esc(k)}"><td>${link(k)}</td><td class="num">${T[k].rows.toLocaleString()}</td>
       <td class="num">${T[k].cols.length}</td><td>${esc(T[k].desc)}</td></tr>`).join("") + "</table>").join("");
@@ -1458,9 +1469,10 @@ document.getElementById("tabs").addEventListener("click", (e) => { const b = e.t
 box.addEventListener("click", (e) => {
   const n = e.target.closest(".node");
   if (n) select(n.id.slice(2), false);
-  else { current = null; mark(); }
+  else hideDetail();
 });
 [detail, document.getElementById("tlist")].forEach((el) => el.addEventListener("click", (e) => {
+  if (e.target.closest("#detailHide")) { hideDetail(); return; }
   const a = e.target.closest("a[data-t]");
   if (a) { e.preventDefault(); select(a.dataset.t, el.id === "tlist"); }
 }));

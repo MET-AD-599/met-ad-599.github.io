@@ -1,0 +1,648 @@
+{% extends "base.html" %}
+{% block title %}AD 599 · Week 10 · Chinook database{% endblock %}
+{% block wrapclass %}wide{% endblock %}
+{% block head %}
+<style>
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+  .tabs button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+  .tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .erdbox { overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: #fbfbf9; max-height: 78vh; }
+  .erdbox svg { display: block; height: auto; margin: 0 auto; transform-origin: 0 0; }
+  .erdbox svg .node { cursor: pointer; transition: opacity .15s; }
+  .erdbox svg .edge { transition: opacity .15s; }
+  .erdbox svg.focus .node, .erdbox svg.focus .edge { opacity: .18; }
+  .erdbox svg.focus .node.sel, .erdbox svg.focus .node.nb, .erdbox svg.focus .edge.hl { opacity: 1; }
+  .erdbox svg .node.sel polygon { stroke-width: 3; }
+  .erdbox svg .edge.hl path { stroke: var(--accent); stroke-width: 2.2; }
+  .erdbox svg .node.hit polygon[fill="#ffffff"] { fill: #fff4d6; }
+  .tools { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 10px; }
+  .tools input { max-width: 300px; }
+  .tools button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 12px; font: inherit; cursor: pointer; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: .85rem; margin-top: 8px; }
+  .legend b u { color: var(--ink); }
+  .legend .fk { color: #3b6fd1; }
+  #detail h2 { margin: 0 0 4px; font-size: 1.25rem; }
+  #detail .meta { color: var(--muted); font-size: .9rem; margin-bottom: 10px; }
+  #detail .rel a, .tlist a { color: var(--ink); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); }
+  #detail table { margin: 8px 0 14px; }
+  #detail td.k { font-weight: 700; white-space: nowrap; }
+  #detail td.ref { color: #3b6fd1; }
+  .samp { overflow-x: auto; }
+  .samp table { font-size: .8rem; }
+  .samp td { white-space: nowrap; font-family: ui-monospace, monospace; }
+  .tlist h3 { font-size: 1rem; margin: 18px 0 4px; }
+  .tlist table td:first-child { font-weight: 600; white-space: nowrap; }
+  .tlist tr.hit td { background: #fff4d6; }
+  .tlist tr.cur td { background: #eef3fc; }
+  code { font-size: .9em; }
+</style>
+{% endblock %}
+{% block body %}
+<header><h1>Week 10 · Chinook database</h1><span class="course">{{ course }}</span></header>
+
+<div class="card">
+  <p style="margin:0">The database for Lecture 10: a digital music store. Get <code>chinook.db</code> from Blackboard.
+  Click a table in the diagram or in the list to see its columns, keys and a few rows.</p>
+</div>
+
+<div class="card">
+  <div class="tabs" id="tabs">
+    <button type="button" data-g="oltp" class="on">Chinook tables (3NF) · 11</button>
+    <button type="button" data-g="star">Star schema · 4</button>
+  </div>
+  <div class="tools">
+    <input type="text" id="find" placeholder="Find a column, e.g. Composer" autocomplete="off">
+    <span class="muted" id="findout"></span>
+    <span style="flex:1"></span>
+    <button type="button" id="zout" aria-label="Zoom out">−</button>
+    <button type="button" id="zfit">Fit</button>
+    <button type="button" id="zin" aria-label="Zoom in">+</button>
+  </div>
+  <div class="erdbox" id="erdbox">
+{% raw %}
+<div data-g="oltp"><svg class="erd" data-group="oltp"
+ viewBox="0.00 0.00 942.60 682.10" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(10.8 671.3)">
+
+<!-- Artist -->
+<g id="t_Artist" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="21.5,-463.5 21.5,-528.5 146.5,-528.5 146.5,-463.5 21.5,-463.5"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="23,-506 23,-527 146,-527 146,-506 23,-506"/>
+<text text-anchor="start" x="65" y="-514.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">Artist</text>
+<text text-anchor="start" x="27" y="-493.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">ArtistId</text>
+<text text-anchor="start" x="87" y="-493" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="27" y="-471.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Name</text>
+<text text-anchor="start" x="87" y="-472" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<polygon fill="none" stroke="#3b6fd1" points="21.5,-463.5 21.5,-528.5 146.5,-528.5 146.5,-463.5 21.5,-463.5"/>
+</g>
+<!-- Album -->
+<g id="t_Album" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="292,-453 292,-539 420,-539 420,-453 292,-453"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="293,-517 293,-538 419,-538 419,-517 293,-517"/>
+<text text-anchor="start" x="334.5" y="-525.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">Album</text>
+<text text-anchor="start" x="297" y="-504.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">AlbumId</text>
+<text text-anchor="start" x="360" y="-504" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="297" y="-482.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Title</text>
+<text text-anchor="start" x="360" y="-483" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="297" y="-461.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">ArtistId</text>
+<text text-anchor="start" x="360" y="-462" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<polygon fill="none" stroke="#3b6fd1" points="292,-453 292,-539 420,-539 420,-453 292,-453"/>
+</g>
+<!-- Artist&#45;&gt;Album -->
+<g id="e_Artist__Album" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M164.97,-496C196.64,-496 233.18,-496 265.71,-496"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="155.53,-501 155.53,-491 157.53,-491 157.53,-501 155.53,-501"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="154.53,-496 159.53,-496 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="160.53,-501 160.53,-491 162.53,-491 162.53,-501 160.53,-501"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="159.53,-496 164.53,-496 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="273.82,-496 283.82,-500.5 278.82,-496 283.82,-496 283.82,-496 283.82,-496 278.82,-496 283.82,-491.5 273.82,-496 273.82,-496"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="269.82" cy="-496" rx="4" ry="4"/>
+</g>
+<!-- Track -->
+<g id="t_Track" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="523.5,-346 523.5,-558 671.5,-558 671.5,-346 523.5,-346"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="524.5,-536 524.5,-557 670.5,-557 670.5,-536 524.5,-536"/>
+<text text-anchor="start" x="579" y="-544.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">Track</text>
+<text text-anchor="start" x="528.5" y="-523.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">TrackId</text>
+<text text-anchor="start" x="611.5" y="-523" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="528.5" y="-501.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Name</text>
+<text text-anchor="start" x="611.5" y="-502" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="528.5" y="-480.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">AlbumId</text>
+<text text-anchor="start" x="611.5" y="-481" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="528.5" y="-459.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">MediaTypeId</text>
+<text text-anchor="start" x="611.5" y="-460" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="528.5" y="-438.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">GenreId</text>
+<text text-anchor="start" x="611.5" y="-439" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="528.5" y="-417.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Composer</text>
+<text text-anchor="start" x="611.5" y="-418" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="528.5" y="-396.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Milliseconds</text>
+<text text-anchor="start" x="611.5" y="-397" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="528.5" y="-375.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Bytes</text>
+<text text-anchor="start" x="611.5" y="-376" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="528.5" y="-354.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">UnitPrice</text>
+<text text-anchor="start" x="611.5" y="-355" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NUMERIC</text>
+<polygon fill="none" stroke="#3b6fd1" points="523.5,-346 523.5,-558 671.5,-558 671.5,-346 523.5,-346"/>
+</g>
+<!-- Album&#45;&gt;Track -->
+<g id="e_Album__Track" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M438.34,-481.06C457.4,-477.55 477.91,-473.79 497.64,-470.16"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="430.1,-487.65 428.29,-477.82 430.26,-477.46 432.06,-487.29 430.1,-487.65"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="428.21,-482.92 433.13,-482.01 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="435.01,-486.75 433.21,-476.92 435.17,-476.55 436.98,-486.39 435.01,-486.75"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="433.13,-482.01 438.04,-481.11 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="505.64,-468.69 516.29,-471.31 510.56,-467.79 515.48,-466.88 515.48,-466.88 515.48,-466.88 510.56,-467.79 514.67,-462.46 505.64,-468.69 505.64,-468.69"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="501.71" cy="-469.41" rx="4" ry="4"/>
+</g>
+<!-- PlaylistTrack -->
+<g id="t_PlaylistTrack" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="775,-536.5 775,-601.5 898,-601.5 898,-536.5 775,-536.5"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="776.5,-579 776.5,-600 897.5,-600 897.5,-579 776.5,-579"/>
+<text text-anchor="start" x="794.5" y="-587.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">PlaylistTrack</text>
+<text text-anchor="start" x="780.5" y="-566.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#3b6fd1">PlaylistId</text>
+<text text-anchor="start" x="850.5" y="-566" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="780.5" y="-545.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#3b6fd1">TrackId</text>
+<text text-anchor="start" x="850.5" y="-545" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<polygon fill="none" stroke="#3b6fd1" points="775,-536.5 775,-601.5 898,-601.5 898,-536.5 775,-536.5"/>
+</g>
+<!-- Track&#45;&gt;PlaylistTrack -->
+<g id="e_Track__PlaylistTrack" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M688.82,-496.59C709.18,-506.64 730.72,-517.28 750.85,-527.21"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="678.41,-497.03 682.84,-488.06 684.63,-488.95 680.21,-497.91 678.41,-497.03"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="679.73,-492.1 684.21,-494.31 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="682.9,-499.24 687.32,-490.27 689.12,-491.16 684.69,-500.13 682.9,-499.24"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="684.21,-494.31 688.7,-496.53 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="758.03,-530.75 765,-539.21 762.51,-532.97 766.99,-535.18 766.99,-535.18 766.99,-535.18 762.51,-532.97 768.98,-531.14 758.03,-530.75 758.03,-530.75"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="754.44" cy="-528.98" rx="4" ry="4"/>
+</g>
+<!-- InvoiceLine -->
+<g id="t_InvoiceLine" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="760,-312 760,-440 913,-440 913,-312 760,-312"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="761.5,-418 761.5,-439 912.5,-439 912.5,-418 761.5,-418"/>
+<text text-anchor="start" x="799" y="-426.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">InvoiceLine</text>
+<text text-anchor="start" x="765.5" y="-405.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">InvoiceLineId</text>
+<text text-anchor="start" x="861.5" y="-405" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="765.5" y="-383.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">InvoiceId</text>
+<text text-anchor="start" x="861.5" y="-384" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="765.5" y="-362.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">TrackId</text>
+<text text-anchor="start" x="861.5" y="-363" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="765.5" y="-341.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">UnitPrice</text>
+<text text-anchor="start" x="861.5" y="-342" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NUMERIC</text>
+<text text-anchor="start" x="765.5" y="-320.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Quantity</text>
+<text text-anchor="start" x="861.5" y="-321" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<polygon fill="none" stroke="#3b6fd1" points="760,-312 760,-440 913,-440 913,-312 760,-312"/>
+</g>
+<!-- Track&#45;&gt;InvoiceLine -->
+<g id="e_Track__InvoiceLine" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M689.4,-422.85C704.19,-418.11 719.57,-413.17 734.58,-408.36"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="682.21,-430.41 679.16,-420.88 681.06,-420.27 684.11,-429.8 682.21,-430.41"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="679.73,-425.95 684.49,-424.42 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="686.97,-428.88 683.92,-419.36 685.82,-418.75 688.88,-428.27 686.97,-428.88"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="684.49,-424.42 689.25,-422.9 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="742.43,-405.84 753.33,-407.08 747.2,-404.32 751.96,-402.79 751.96,-402.79 751.96,-402.79 747.2,-404.32 750.58,-398.51 742.43,-405.84 742.43,-405.84"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="738.63" cy="-407.07" rx="4" ry="4"/>
+</g>
+<!-- Genre -->
+<g id="t_Genre" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="292.5,-354.5 292.5,-419.5 419.5,-419.5 419.5,-354.5 292.5,-354.5"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="294,-397 294,-418 419,-418 419,-397 294,-397"/>
+<text text-anchor="start" x="336" y="-405.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">Genre</text>
+<text text-anchor="start" x="298" y="-384.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">GenreId</text>
+<text text-anchor="start" x="360" y="-384" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="298" y="-362.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Name</text>
+<text text-anchor="start" x="360" y="-363" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<polygon fill="none" stroke="#3b6fd1" points="292.5,-354.5 292.5,-419.5 419.5,-419.5 419.5,-354.5 292.5,-354.5"/>
+</g>
+<!-- Genre&#45;&gt;Track -->
+<g id="e_Genre__Track" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M437.43,-408.83C456.87,-414.11 477.88,-419.81 498.05,-425.28"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="427.22,-411.24 429.84,-401.59 431.77,-402.11 429.15,-411.76 427.22,-411.24"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="427.56,-406.15 432.39,-407.46 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="432.04,-412.55 434.66,-402.9 436.59,-403.42 433.97,-413.07 432.04,-412.55"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="432.39,-407.46 437.21,-408.77 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="505.85,-427.4 514.32,-434.36 510.67,-428.71 515.5,-430.02 515.5,-430.02 515.5,-430.02 510.67,-428.71 516.68,-425.67 505.85,-427.4 505.85,-427.4"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="501.99" cy="-426.35" rx="4" ry="4"/>
+</g>
+<!-- MediaType -->
+<g id="t_MediaType" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="277,-572.5 277,-637.5 435,-637.5 435,-572.5 277,-572.5"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="278,-615 278,-636 434,-636 434,-615 278,-615"/>
+<text text-anchor="start" x="320" y="-623.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">MediaType</text>
+<text text-anchor="start" x="282" y="-602.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">MediaTypeId</text>
+<text text-anchor="start" x="375" y="-602" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="282" y="-580.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Name</text>
+<text text-anchor="start" x="375" y="-581" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<polygon fill="none" stroke="#3b6fd1" points="277,-572.5 277,-637.5 435,-637.5 435,-572.5 277,-572.5"/>
+</g>
+<!-- MediaType&#45;&gt;Track -->
+<g id="e_MediaType__Track" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M429.81,-563.11C434.29,-560.4 438.72,-557.68 443,-555 461.69,-543.31 481.41,-530.48 500.25,-517.96"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="424.58,-572.09 419.43,-563.52 421.14,-562.49 426.29,-571.06 424.58,-572.09"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="421.14,-568.32 425.43,-565.74 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="428.86,-569.51 423.71,-560.94 425.43,-559.91 430.58,-568.48 428.86,-569.51"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="425.43,-565.74 429.71,-563.17 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="507.17,-513.33 517.98,-511.52 511.33,-510.55 515.48,-507.78 515.48,-507.78 515.48,-507.78 511.33,-510.55 512.98,-504.04 507.17,-513.33 507.17,-513.33"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="503.84" cy="-515.56" rx="4" ry="4"/>
+</g>
+<!-- Playlist -->
+<g id="t_Playlist" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="530,-591.5 530,-656.5 665,-656.5 665,-591.5 530,-591.5"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="531.5,-634 531.5,-655 664.5,-655 664.5,-634 531.5,-634"/>
+<text text-anchor="start" x="573.5" y="-642.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">Playlist</text>
+<text text-anchor="start" x="535.5" y="-621.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">PlaylistId</text>
+<text text-anchor="start" x="605.5" y="-621" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="535.5" y="-599.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Name</text>
+<text text-anchor="start" x="605.5" y="-600" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<polygon fill="none" stroke="#3b6fd1" points="530,-591.5 530,-656.5 665,-656.5 665,-591.5 530,-591.5"/>
+</g>
+<!-- Playlist&#45;&gt;PlaylistTrack -->
+<g id="e_Playlist__PlaylistTrack" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M683.15,-604.36C704.6,-599.38 727.66,-594.03 749.19,-589.03"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="675.27,-611.32 673.01,-601.58 674.95,-601.12 677.22,-610.87 675.27,-611.32"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="673.16,-606.67 678.03,-605.54 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="680.14,-610.19 677.88,-600.45 679.83,-599.99 682.09,-609.74 680.14,-610.19"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="678.03,-605.54 682.9,-604.41 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="757.11,-587.19 767.87,-589.32 761.98,-586.06 766.85,-584.93 766.85,-584.93 766.85,-584.93 761.98,-586.06 765.83,-580.55 757.11,-587.19 757.11,-587.19"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="753.21" cy="-588.1" rx="4" ry="4"/>
+</g>
+<!-- Invoice -->
+<g id="t_Invoice" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="510,-91 510,-303 685,-303 685,-91 510,-91"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="511.5,-281 511.5,-302 684.5,-302 684.5,-281 511.5,-281"/>
+<text text-anchor="start" x="574" y="-289.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">Invoice</text>
+<text text-anchor="start" x="515.5" y="-268.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">InvoiceId</text>
+<text text-anchor="start" x="625.5" y="-268" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="515.5" y="-246.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">CustomerId</text>
+<text text-anchor="start" x="625.5" y="-247" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="515.5" y="-225.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">InvoiceDate</text>
+<text text-anchor="start" x="625.5" y="-226" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">DATETIME</text>
+<text text-anchor="start" x="515.5" y="-204.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">BillingAddress</text>
+<text text-anchor="start" x="625.5" y="-205" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="515.5" y="-183.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">BillingCity</text>
+<text text-anchor="start" x="625.5" y="-184" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="515.5" y="-162.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">BillingState</text>
+<text text-anchor="start" x="625.5" y="-163" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="515.5" y="-141.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">BillingCountry</text>
+<text text-anchor="start" x="625.5" y="-142" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="515.5" y="-120.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">BillingPostalCode</text>
+<text text-anchor="start" x="625.5" y="-121" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="515.5" y="-99.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Total</text>
+<text text-anchor="start" x="625.5" y="-100" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NUMERIC</text>
+<polygon fill="none" stroke="#3b6fd1" points="510,-91 510,-303 685,-303 685,-91 510,-91"/>
+</g>
+<!-- Invoice&#45;&gt;InvoiceLine -->
+<g id="e_Invoice__InvoiceLine" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M701.4,-274.71C713.21,-283.63 725.23,-292.71 736.98,-301.59"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="690.97,-273.11 697,-265.13 698.6,-266.34 692.57,-274.32 690.97,-273.11"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="693.19,-268.52 697.18,-271.53 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="694.96,-276.12 700.99,-268.14 702.59,-269.35 696.56,-277.33 694.96,-276.12"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="697.18,-271.53 701.17,-274.54 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="743.7,-306.67 748.97,-316.28 747.69,-309.68 751.68,-312.69 751.68,-312.69 751.68,-312.69 747.69,-309.68 754.39,-309.1 743.7,-306.67 743.7,-306.67"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="740.51" cy="-304.26" rx="4" ry="4"/>
+</g>
+<!-- Customer -->
+<g id="t_Customer" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="278.5,-25 278.5,-321 433.5,-321 433.5,-25 278.5,-25"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="280,-299 280,-320 433,-320 433,-299 280,-299"/>
+<text text-anchor="start" x="323" y="-307.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">Customer</text>
+<text text-anchor="start" x="284" y="-286.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">CustomerId</text>
+<text text-anchor="start" x="374" y="-286" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="284" y="-264.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">FirstName</text>
+<text text-anchor="start" x="374" y="-265" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-243.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">LastName</text>
+<text text-anchor="start" x="374" y="-244" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-222.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Company</text>
+<text text-anchor="start" x="374" y="-223" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-201.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Address</text>
+<text text-anchor="start" x="374" y="-202" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-180.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">City</text>
+<text text-anchor="start" x="374" y="-181" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-159.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">State</text>
+<text text-anchor="start" x="374" y="-160" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-138.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Country</text>
+<text text-anchor="start" x="374" y="-139" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-117.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">PostalCode</text>
+<text text-anchor="start" x="374" y="-118" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-96.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Phone</text>
+<text text-anchor="start" x="374" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-75.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Fax</text>
+<text text-anchor="start" x="374" y="-76" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-54.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Email</text>
+<text text-anchor="start" x="374" y="-55" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="284" y="-33.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">SupportRepId</text>
+<text text-anchor="start" x="374" y="-34" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<polygon fill="none" stroke="#3b6fd1" points="278.5,-25 278.5,-321 433.5,-321 433.5,-25 278.5,-25"/>
+</g>
+<!-- Customer&#45;&gt;Invoice -->
+<g id="e_Customer__Invoice" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M451.87,-182.51C462.23,-183.55 472.86,-184.61 483.41,-185.67"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="442.27,-186.57 443.27,-176.62 445.26,-176.82 444.26,-186.77 442.27,-186.57"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="441.78,-181.5 446.75,-181.99 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="447.25,-187.07 448.24,-177.12 450.23,-177.32 449.24,-187.27 447.25,-187.07"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="446.75,-181.99 451.73,-182.49 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="491.69,-186.5 501.19,-191.97 496.66,-187 501.64,-187.49 501.64,-187.49 501.64,-187.49 496.66,-187 502.09,-183.02 491.69,-186.5 491.69,-186.5"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="487.71" cy="-186.1" rx="4" ry="4"/>
+</g>
+<!-- Employee -->
+<g id="t_Employee" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="8,-4 8,-342 160,-342 160,-4 8,-4"/>
+<polygon fill="#3b6fd1" stroke="transparent" points="9,-320 9,-341 159,-341 159,-320 9,-320"/>
+<text text-anchor="start" x="51" y="-328.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">Employee</text>
+<text text-anchor="start" x="13" y="-307.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">EmployeeId</text>
+<text text-anchor="start" x="100" y="-307" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="13" y="-285.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">LastName</text>
+<text text-anchor="start" x="100" y="-286" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-264.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">FirstName</text>
+<text text-anchor="start" x="100" y="-265" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-243.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Title</text>
+<text text-anchor="start" x="100" y="-244" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-222.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#3b6fd1">ReportsTo</text>
+<text text-anchor="start" x="100" y="-223" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="13" y="-201.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">BirthDate</text>
+<text text-anchor="start" x="100" y="-202" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">DATETIME</text>
+<text text-anchor="start" x="13" y="-180.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">HireDate</text>
+<text text-anchor="start" x="100" y="-181" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">DATETIME</text>
+<text text-anchor="start" x="13" y="-159.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Address</text>
+<text text-anchor="start" x="100" y="-160" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-138.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">City</text>
+<text text-anchor="start" x="100" y="-139" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-117.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">State</text>
+<text text-anchor="start" x="100" y="-118" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-96.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Country</text>
+<text text-anchor="start" x="100" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-75.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">PostalCode</text>
+<text text-anchor="start" x="100" y="-76" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-54.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Phone</text>
+<text text-anchor="start" x="100" y="-55" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-33.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Fax</text>
+<text text-anchor="start" x="100" y="-34" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<text text-anchor="start" x="13" y="-12.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">Email</text>
+<text text-anchor="start" x="100" y="-13" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">NVARCHAR</text>
+<polygon fill="none" stroke="#3b6fd1" points="8,-4 8,-342 160,-342 160,-4 8,-4"/>
+</g>
+<!-- Employee&#45;&gt;Customer -->
+<g id="e_Employee__Customer" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M178.21,-173C202.01,-173 227.73,-173 251.99,-173"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="169.21,-178 169.21,-168 171.21,-168 171.21,-178 169.21,-178"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="168.21,-173 173.21,-173 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="174.21,-178 174.21,-168 176.21,-168 176.21,-178 174.21,-178"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="173.21,-173 178.21,-173 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="260.2,-173 270.2,-177.5 265.2,-173 270.2,-173 270.2,-173 270.2,-173 265.2,-173 270.2,-168.5 260.2,-173 260.2,-173"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="256.2" cy="-173" rx="4" ry="4"/>
+<text text-anchor="middle" x="218.5" y="-176" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">supports</text>
+</g>
+<!-- Employee&#45;&gt;Employee -->
+<g id="e_Employee__Employee" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M68.7,-358.39C72.62,-366.36 77.72,-371 84,-371 88.94,-371 93.15,-368.13 96.63,-363.03"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="59.86,-348.76 69.25,-345.33 69.94,-347.21 60.54,-350.64 59.86,-348.76"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="64.21,-346.11 65.93,-350.81 "/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="67.3" cy="-354.56" rx="4" ry="4"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="99.89,-355.32 107.93,-347.86 101.84,-350.71 103.79,-346.11 103.79,-346.11 103.79,-346.11 101.84,-350.71 99.64,-344.36 99.89,-355.32 99.89,-355.32"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="98.33" cy="-359" rx="4" ry="4"/>
+<text text-anchor="middle" x="84" y="-374" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">reports to</text>
+</g>
+</g>
+</svg>
+</div>
+<div data-g="star" hidden><svg class="erd" data-group="star"
+ viewBox="0.00 0.00 426.60 543.60" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(10.8 532.8)">
+
+<!-- fact_sales -->
+<g id="t_fact_sales" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="241,-186.5 241,-377.5 397,-377.5 397,-186.5 241,-186.5"/>
+<polygon fill="#9b59b6" stroke="transparent" points="242,-355 242,-376 396,-376 396,-355 242,-355"/>
+<text text-anchor="start" x="285" y="-363.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">fact_sales</text>
+<text text-anchor="start" x="246" y="-342.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">invoice_line_id</text>
+<text text-anchor="start" x="349" y="-342" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="246" y="-320.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">invoice_id</text>
+<text text-anchor="start" x="349" y="-321" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="246" y="-299.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#9b59b6">date_key</text>
+<text text-anchor="start" x="349" y="-300" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="246" y="-278.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#9b59b6">customer_key</text>
+<text text-anchor="start" x="349" y="-279" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="246" y="-257.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#9b59b6">track_key</text>
+<text text-anchor="start" x="349" y="-258" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="246" y="-236.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">quantity</text>
+<text text-anchor="start" x="349" y="-237" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="246" y="-215.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">unit_price</text>
+<text text-anchor="start" x="349" y="-216" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">REAL</text>
+<text text-anchor="start" x="246" y="-194.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">line_amount</text>
+<text text-anchor="start" x="349" y="-195" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">REAL</text>
+<polygon fill="none" stroke="#9b59b6" points="241,-186.5 241,-377.5 397,-377.5 397,-186.5 241,-186.5"/>
+</g>
+<!-- dim_customer -->
+<g id="t_dim_customer" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="8,-390 8,-518 167,-518 167,-390 8,-390"/>
+<polygon fill="#9b59b6" stroke="transparent" points="9.5,-496 9.5,-517 166.5,-517 166.5,-496 9.5,-496"/>
+<text text-anchor="start" x="40.5" y="-504.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">dim_customer</text>
+<text text-anchor="start" x="13.5" y="-483.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">customer_key</text>
+<text text-anchor="start" x="119.5" y="-483" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="13.5" y="-461.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">customer_name</text>
+<text text-anchor="start" x="119.5" y="-462" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="13.5" y="-440.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">city</text>
+<text text-anchor="start" x="119.5" y="-441" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="13.5" y="-419.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">country</text>
+<text text-anchor="start" x="119.5" y="-420" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="13.5" y="-398.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">rep_name</text>
+<text text-anchor="start" x="119.5" y="-399" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<polygon fill="none" stroke="#9b59b6" points="8,-390 8,-518 167,-518 167,-390 8,-390"/>
+</g>
+<!-- dim_customer&#45;&gt;fact_sales -->
+<g id="e_dim_customer__fact_sales" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M183.69,-382.66C194.98,-374.2 206.52,-365.55 217.87,-357.05"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="179.06,-392.38 173.07,-384.37 174.67,-383.17 180.66,-391.18 179.06,-392.38"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="175.26,-388.97 179.27,-385.98 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="183.06,-389.38 177.07,-381.37 178.67,-380.18 184.66,-388.18 183.06,-389.38"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="179.27,-385.98 183.27,-382.98 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="224.63,-351.97 235.33,-349.58 228.63,-348.98 232.63,-345.98 232.63,-345.98 232.63,-345.98 228.63,-348.98 229.94,-342.38 224.63,-351.97 224.63,-351.97"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="221.43" cy="-354.37" rx="4" ry="4"/>
+</g>
+<!-- dim_track -->
+<g id="t_dim_track" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="19,-207.5 19,-356.5 156,-356.5 156,-207.5 19,-207.5"/>
+<polygon fill="#9b59b6" stroke="transparent" points="20.5,-334 20.5,-355 155.5,-355 155.5,-334 20.5,-334"/>
+<text text-anchor="start" x="54.5" y="-342.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">dim_track</text>
+<text text-anchor="start" x="24.5" y="-321.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">track_key</text>
+<text text-anchor="start" x="108.5" y="-321" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="24.5" y="-299.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">track_name</text>
+<text text-anchor="start" x="108.5" y="-300" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="24.5" y="-278.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">album_title</text>
+<text text-anchor="start" x="108.5" y="-279" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="24.5" y="-257.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">artist_name</text>
+<text text-anchor="start" x="108.5" y="-258" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="24.5" y="-236.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">genre_name</text>
+<text text-anchor="start" x="108.5" y="-237" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="24.5" y="-215.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">media_type</text>
+<text text-anchor="start" x="108.5" y="-216" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<polygon fill="none" stroke="#9b59b6" points="19,-207.5 19,-356.5 156,-356.5 156,-207.5 19,-207.5"/>
+</g>
+<!-- dim_track&#45;&gt;fact_sales -->
+<g id="e_dim_track__fact_sales" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M174.44,-282C187.56,-282 201.21,-282 214.65,-282"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="165.28,-287 165.28,-277 167.28,-277 167.28,-287 165.28,-287"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="164.28,-282 169.28,-282 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="170.28,-287 170.28,-277 172.28,-277 172.28,-287 170.28,-287"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="169.28,-282 174.28,-282 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="222.78,-282 232.78,-286.5 227.78,-282 232.78,-282 232.78,-282 232.78,-282 227.78,-282 232.78,-277.5 222.78,-282 222.78,-282"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="218.78" cy="-282" rx="4" ry="4"/>
+</g>
+<!-- dim_date -->
+<g id="t_dim_date" class="node">
+
+<polygon fill="#ffffff" stroke="transparent" points="17,-4 17,-174 158,-174 158,-4 17,-4"/>
+<polygon fill="#9b59b6" stroke="transparent" points="18.5,-152 18.5,-173 157.5,-173 157.5,-152 18.5,-152"/>
+<text text-anchor="start" x="57" y="-160.4" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#ffffff">dim_date</text>
+<text text-anchor="start" x="22.5" y="-139.4" font-family="Helvetica,sans-Serif" font-weight="bold" text-decoration="underline" font-size="12.00" fill="#1c1c1c">date_key</text>
+<text text-anchor="start" x="110.5" y="-139" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="22.5" y="-117.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">full_date</text>
+<text text-anchor="start" x="110.5" y="-118" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="22.5" y="-96.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">year</text>
+<text text-anchor="start" x="110.5" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="22.5" y="-75.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">quarter</text>
+<text text-anchor="start" x="110.5" y="-76" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="22.5" y="-54.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">month</text>
+<text text-anchor="start" x="110.5" y="-55" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">INTEGER</text>
+<text text-anchor="start" x="22.5" y="-33.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">month_name</text>
+<text text-anchor="start" x="110.5" y="-34" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<text text-anchor="start" x="22.5" y="-12.4" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#1c1c1c">weekday</text>
+<text text-anchor="start" x="110.5" y="-13" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#6b6b6b">TEXT</text>
+<polygon fill="none" stroke="#9b59b6" points="17,-4 17,-174 158,-174 158,-4 17,-4"/>
+</g>
+<!-- dim_date&#45;&gt;fact_sales -->
+<g id="e_dim_date__fact_sales" class="edge">
+
+<path fill="none" stroke="#8a8a8a" stroke-width="1.4" d="M174.07,-160.96C188.64,-173.21 203.88,-186.03 218.77,-198.55"/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="163.75,-158.81 170.18,-151.16 171.71,-152.45 165.28,-160.1 163.75,-158.81"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="166.2,-154.34 170.02,-157.56 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="167.57,-162.03 174.01,-154.38 175.54,-155.66 169.1,-163.32 167.57,-162.03"/>
+<polyline fill="none" stroke="#8a8a8a" stroke-width="1.4" points="170.02,-157.56 173.85,-160.78 "/>
+<polygon fill="#8a8a8a" stroke="#8a8a8a" stroke-width="1.4" points="225.25,-204 230,-213.88 229.07,-207.22 232.9,-210.43 232.9,-210.43 232.9,-210.43 229.07,-207.22 235.8,-206.99 225.25,-204 225.25,-204"/>
+<ellipse fill="none" stroke="#8a8a8a" stroke-width="1.4" cx="222.18" cy="-201.42" rx="4" ry="4"/>
+</g>
+</g>
+</svg>
+</div>
+{% endraw %}
+  </div>
+  <div class="legend">
+    <span><b><u>Bold underlined</u></b> = primary key</span>
+    <span class="fk">Blue / violet = foreign key</span>
+    <span>Bar end = one · crow's foot = many · circle = optional</span>
+  </div>
+</div>
+
+<div class="card" id="detail"><p class="muted" style="margin:0">Click a table to see its details here.</p></div>
+
+<div class="card tlist" id="tlist"></div>
+
+{% raw %}
+<script>
+const DATA = {"tables": {"Artist": {"name": "Artist", "group": "oltp", "desc": "One row per artist or band.", "rows": 275, "cols": [{"name": "ArtistId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "Name", "type": "NVARCHAR(120)", "notnull": false, "pk": 0}], "sample": [[1, "AC/DC"], [2, "Accept"], [3, "Aerosmith"]], "parents": [], "children": ["Album"]}, "Album": {"name": "Album", "group": "oltp", "desc": "One row per album. Each album belongs to one artist.", "rows": 347, "cols": [{"name": "AlbumId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "Title", "type": "NVARCHAR(160)", "notnull": true, "pk": 0}, {"name": "ArtistId", "type": "INTEGER", "notnull": true, "pk": 0, "ref": "Artist.ArtistId"}], "sample": [[1, "For Those About To Rock We Salute You", 1], [2, "Balls to the Wall", 2], [3, "Restless and Wild", 2]], "parents": ["Artist"], "children": ["Track"]}, "Track": {"name": "Track", "group": "oltp", "desc": "One row per song or video in the catalogue, with its album, genre, media type, length and price.", "rows": 3503, "cols": [{"name": "TrackId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "Name", "type": "NVARCHAR(200)", "notnull": true, "pk": 0}, {"name": "AlbumId", "type": "INTEGER", "notnull": false, "pk": 0, "ref": "Album.AlbumId"}, {"name": "MediaTypeId", "type": "INTEGER", "notnull": true, "pk": 0, "ref": "MediaType.MediaTypeId"}, {"name": "GenreId", "type": "INTEGER", "notnull": false, "pk": 0, "ref": "Genre.GenreId"}, {"name": "Composer", "type": "NVARCHAR(220)", "notnull": false, "pk": 0}, {"name": "Milliseconds", "type": "INTEGER", "notnull": true, "pk": 0}, {"name": "Bytes", "type": "INTEGER", "notnull": false, "pk": 0}, {"name": "UnitPrice", "type": "NUMERIC(10,2)", "notnull": true, "pk": 0}], "sample": [[1, "For Those About To Rock (We Salute You)", 1, 1, 1, "Angus Young, Malcolm Young, Brian Johnson", 343719, 11170334, 0.99], [2, "Balls to the Wall", 2, 2, 1, null, 342562, 5510424, 0.99], [3, "Fast As a Shark", 3, 2, 1, "F. Baltes, S. Kaufman, U. Dirkscneider & W. Hoffman", 230619, 3990994, 0.99]], "parents": ["Album", "Genre", "MediaType"], "children": ["InvoiceLine", "PlaylistTrack"]}, "Genre": {"name": "Genre", "group": "oltp", "desc": "One row per music genre (Rock, Jazz, ...).", "rows": 25, "cols": [{"name": "GenreId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "Name", "type": "NVARCHAR(120)", "notnull": false, "pk": 0}], "sample": [[1, "Rock"], [2, "Jazz"], [3, "Metal"]], "parents": [], "children": ["Track"]}, "MediaType": {"name": "MediaType", "group": "oltp", "desc": "One row per file format (MPEG audio, protected AAC, video, ...).", "rows": 5, "cols": [{"name": "MediaTypeId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "Name", "type": "NVARCHAR(120)", "notnull": false, "pk": 0}], "sample": [[1, "MPEG audio file"], [2, "Protected AAC audio file"], [3, "Protected MPEG-4 video file"]], "parents": [], "children": ["Track"]}, "Playlist": {"name": "Playlist", "group": "oltp", "desc": "One row per playlist.", "rows": 18, "cols": [{"name": "PlaylistId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "Name", "type": "NVARCHAR(120)", "notnull": false, "pk": 0}], "sample": [[1, "Music"], [2, "Movies"], [3, "TV Shows"]], "parents": [], "children": ["PlaylistTrack"]}, "PlaylistTrack": {"name": "PlaylistTrack", "group": "oltp", "desc": "Bridge table: one row per track on a playlist (many-to-many between Playlist and Track).", "rows": 8715, "cols": [{"name": "PlaylistId", "type": "INTEGER", "notnull": true, "pk": 1, "ref": "Playlist.PlaylistId"}, {"name": "TrackId", "type": "INTEGER", "notnull": true, "pk": 2, "ref": "Track.TrackId"}], "sample": [[1, 3402], [1, 3389], [1, 3390]], "parents": ["Playlist", "Track"], "children": []}, "Invoice": {"name": "Invoice", "group": "oltp", "desc": "One row per purchase: who bought, when, billing address and the invoice total.", "rows": 412, "cols": [{"name": "InvoiceId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "CustomerId", "type": "INTEGER", "notnull": true, "pk": 0, "ref": "Customer.CustomerId"}, {"name": "InvoiceDate", "type": "DATETIME", "notnull": true, "pk": 0}, {"name": "BillingAddress", "type": "NVARCHAR(70)", "notnull": false, "pk": 0}, {"name": "BillingCity", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "BillingState", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "BillingCountry", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "BillingPostalCode", "type": "NVARCHAR(10)", "notnull": false, "pk": 0}, {"name": "Total", "type": "NUMERIC(10,2)", "notnull": true, "pk": 0}], "sample": [[1, 2, "2009-01-01 00:00:00", "Theodor-Heuss-Straße 34", "Stuttgart", null, "Germany", "70174", 1.98], [2, 4, "2009-01-02 00:00:00", "Ullevålsveien 14", "Oslo", null, "Norway", "0171", 3.96], [3, 8, "2009-01-03 00:00:00", "Grétrystraat 63", "Brussels", null, "Belgium", "1000", 5.94]], "parents": ["Customer"], "children": ["InvoiceLine"]}, "InvoiceLine": {"name": "InvoiceLine", "group": "oltp", "desc": "One row per track on an invoice: price and quantity. Line revenue = UnitPrice × Quantity.", "rows": 2240, "cols": [{"name": "InvoiceLineId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "InvoiceId", "type": "INTEGER", "notnull": true, "pk": 0, "ref": "Invoice.InvoiceId"}, {"name": "TrackId", "type": "INTEGER", "notnull": true, "pk": 0, "ref": "Track.TrackId"}, {"name": "UnitPrice", "type": "NUMERIC(10,2)", "notnull": true, "pk": 0}, {"name": "Quantity", "type": "INTEGER", "notnull": true, "pk": 0}], "sample": [[1, 1, 2, 0.99, 1], [2, 1, 4, 0.99, 1], [3, 2, 6, 0.99, 1]], "parents": ["Invoice", "Track"], "children": []}, "Customer": {"name": "Customer", "group": "oltp", "desc": "One row per customer, with contact details and their sales support rep.", "rows": 59, "cols": [{"name": "CustomerId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "FirstName", "type": "NVARCHAR(40)", "notnull": true, "pk": 0}, {"name": "LastName", "type": "NVARCHAR(20)", "notnull": true, "pk": 0}, {"name": "Company", "type": "NVARCHAR(80)", "notnull": false, "pk": 0}, {"name": "Address", "type": "NVARCHAR(70)", "notnull": false, "pk": 0}, {"name": "City", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "State", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "Country", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "PostalCode", "type": "NVARCHAR(10)", "notnull": false, "pk": 0}, {"name": "Phone", "type": "NVARCHAR(24)", "notnull": false, "pk": 0}, {"name": "Fax", "type": "NVARCHAR(24)", "notnull": false, "pk": 0}, {"name": "Email", "type": "NVARCHAR(60)", "notnull": true, "pk": 0}, {"name": "SupportRepId", "type": "INTEGER", "notnull": false, "pk": 0, "ref": "Employee.EmployeeId"}], "sample": [[1, "Luís", "Gonçalves", "Embraer - Empresa Brasileira de Aeronáutica S.A.", "Av. Brigadeiro Faria Lima, 2170", "São José dos Campos", "SP", "Brazil", "12227-000", "+55 (12) 3923-5555", "+55 (12) 3923-5566", "luisg@embraer.com.br", 3], [2, "Leonie", "Köhler", null, "Theodor-Heuss-Straße 34", "Stuttgart", null, "Germany", "70174", "+49 0711 2842222", null, "leonekohler@surfeu.de", 5], [3, "François", "Tremblay", null, "1498 rue Bélanger", "Montréal", "QC", "Canada", "H2G 1A7", "+1 (514) 721-4711", null, "ftremblay@gmail.com", 3]], "parents": ["Employee"], "children": ["Invoice"]}, "Employee": {"name": "Employee", "group": "oltp", "desc": "One row per employee. ReportsTo points at the employee's manager (a self-reference).", "rows": 8, "cols": [{"name": "EmployeeId", "type": "INTEGER", "notnull": true, "pk": 1}, {"name": "LastName", "type": "NVARCHAR(20)", "notnull": true, "pk": 0}, {"name": "FirstName", "type": "NVARCHAR(20)", "notnull": true, "pk": 0}, {"name": "Title", "type": "NVARCHAR(30)", "notnull": false, "pk": 0}, {"name": "ReportsTo", "type": "INTEGER", "notnull": false, "pk": 0, "ref": "Employee.EmployeeId"}, {"name": "BirthDate", "type": "DATETIME", "notnull": false, "pk": 0}, {"name": "HireDate", "type": "DATETIME", "notnull": false, "pk": 0}, {"name": "Address", "type": "NVARCHAR(70)", "notnull": false, "pk": 0}, {"name": "City", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "State", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "Country", "type": "NVARCHAR(40)", "notnull": false, "pk": 0}, {"name": "PostalCode", "type": "NVARCHAR(10)", "notnull": false, "pk": 0}, {"name": "Phone", "type": "NVARCHAR(24)", "notnull": false, "pk": 0}, {"name": "Fax", "type": "NVARCHAR(24)", "notnull": false, "pk": 0}, {"name": "Email", "type": "NVARCHAR(60)", "notnull": false, "pk": 0}], "sample": [[1, "Adams", "Andrew", "General Manager", null, "1962-02-18 00:00:00", "2002-08-14 00:00:00", "11120 Jasper Ave NW", "Edmonton", "AB", "Canada", "T5K 2N1", "+1 (780) 428-9482", "+1 (780) 428-3457", "andrew@chinookcorp.com"], [2, "Edwards", "Nancy", "Sales Manager", 1, "1958-12-08 00:00:00", "2002-05-01 00:00:00", "825 8 Ave SW", "Calgary", "AB", "Canada", "T2P 2T3", "+1 (403) 262-3443", "+1 (403) 262-3322", "nancy@chinookcorp.com"], [3, "Peacock", "Jane", "Sales Support Agent", 2, "1973-08-29 00:00:00", "2002-04-01 00:00:00", "1111 6 Ave SW", "Calgary", "AB", "Canada", "T2P 5M5", "+1 (403) 262-3443", "+1 (403) 262-6712", "jane@chinookcorp.com"]], "parents": ["Employee"], "children": ["Customer", "Employee"]}, "fact_sales": {"name": "fact_sales", "group": "star", "desc": "Star fact table. Grain: one row per invoice line. Measure: line_amount = unit_price × quantity.", "rows": 2240, "cols": [{"name": "invoice_line_id", "type": "INTEGER", "notnull": false, "pk": 1}, {"name": "invoice_id", "type": "INTEGER", "notnull": true, "pk": 0}, {"name": "date_key", "type": "INTEGER", "notnull": true, "pk": 0, "ref": "dim_date.date_key"}, {"name": "customer_key", "type": "INTEGER", "notnull": true, "pk": 0, "ref": "dim_customer.customer_key"}, {"name": "track_key", "type": "INTEGER", "notnull": true, "pk": 0, "ref": "dim_track.track_key"}, {"name": "quantity", "type": "INTEGER", "notnull": true, "pk": 0}, {"name": "unit_price", "type": "REAL", "notnull": true, "pk": 0}, {"name": "line_amount", "type": "REAL", "notnull": true, "pk": 0}], "sample": [[1, 1, 20090101, 2, 2, 1, 0.99, 0.99], [2, 1, 20090101, 2, 4, 1, 0.99, 0.99], [3, 2, 20090102, 4, 6, 1, 0.99, 0.99]], "parents": ["dim_customer", "dim_date", "dim_track"], "children": []}, "dim_customer": {"name": "dim_customer", "group": "star", "desc": "Star dimension: one row per customer, with country and rep name.", "rows": 59, "cols": [{"name": "customer_key", "type": "INTEGER", "notnull": false, "pk": 1}, {"name": "customer_name", "type": "TEXT", "notnull": true, "pk": 0}, {"name": "city", "type": "TEXT", "notnull": false, "pk": 0}, {"name": "country", "type": "TEXT", "notnull": true, "pk": 0}, {"name": "rep_name", "type": "TEXT", "notnull": true, "pk": 0}], "sample": [[1, "Luís Gonçalves", "São José dos Campos", "Brazil", "Jane Peacock"], [2, "Leonie Köhler", "Stuttgart", "Germany", "Steve Johnson"], [3, "François Tremblay", "Montréal", "Canada", "Jane Peacock"]], "parents": [], "children": ["fact_sales"]}, "dim_track": {"name": "dim_track", "group": "star", "desc": "Star dimension: one row per track, with album, artist, genre and media type spelled out.", "rows": 3503, "cols": [{"name": "track_key", "type": "INTEGER", "notnull": false, "pk": 1}, {"name": "track_name", "type": "TEXT", "notnull": true, "pk": 0}, {"name": "album_title", "type": "TEXT", "notnull": true, "pk": 0}, {"name": "artist_name", "type": "TEXT", "notnull": true, "pk": 0}, {"name": "genre_name", "type": "TEXT", "notnull": true, "pk": 0}, {"name": "media_type", "type": "TEXT", "notnull": true, "pk": 0}], "sample": [[1, "For Those About To Rock (We Salute You)", "For Those About To Rock We Salute You", "AC/DC", "Rock", "MPEG audio file"], [2, "Balls to the Wall", "Balls to the Wall", "Accept", "Rock", "Protected AAC audio file"], [3, "Fast As a Shark", "Restless and Wild", "Accept", "Rock", "Protected AAC audio file"]], "parents": [], "children": ["fact_sales"]}, "dim_date": {"name": "dim_date", "group": "star", "desc": "Star dimension: one row per invoice date, with year, quarter, month and weekday.", "rows": 354, "cols": [{"name": "date_key", "type": "INTEGER", "notnull": false, "pk": 1}, {"name": "full_date", "type": "TEXT", "notnull": true, "pk": 0}, {"name": "year", "type": "INTEGER", "notnull": true, "pk": 0}, {"name": "quarter", "type": "INTEGER", "notnull": true, "pk": 0}, {"name": "month", "type": "INTEGER", "notnull": true, "pk": 0}, {"name": "month_name", "type": "TEXT", "notnull": true, "pk": 0}, {"name": "weekday", "type": "TEXT", "notnull": true, "pk": 0}], "sample": [[20090101, "2009-01-01", 2009, 1, 1, "January", "Thursday"], [20090102, "2009-01-02", 2009, 1, 1, "January", "Friday"], [20090103, "2009-01-03", 2009, 1, 1, "January", "Saturday"]], "parents": [], "children": ["fact_sales"]}, "flat_sales": {"name": "flat_sales", "group": "other", "desc": "Flat export: one wide row per invoice line, everything repeated. invoice_total repeats on every line of an invoice.", "rows": 2240, "cols": [{"name": "invoice_id", "type": "INT", "notnull": false, "pk": 0}, {"name": "invoice_date", "type": "", "notnull": false, "pk": 0}, {"name": "customer_name", "type": "", "notnull": false, "pk": 0}, {"name": "country", "type": "TEXT", "notnull": false, "pk": 0}, {"name": "rep_name", "type": "", "notnull": false, "pk": 0}, {"name": "track_name", "type": "TEXT", "notnull": false, "pk": 0}, {"name": "album_title", "type": "TEXT", "notnull": false, "pk": 0}, {"name": "artist_name", "type": "TEXT", "notnull": false, "pk": 0}, {"name": "genre_name", "type": "TEXT", "notnull": false, "pk": 0}, {"name": "media_type", "type": "TEXT", "notnull": false, "pk": 0}, {"name": "unit_price", "type": "NUM", "notnull": false, "pk": 0}, {"name": "quantity", "type": "INT", "notnull": false, "pk": 0}, {"name": "invoice_total", "type": "NUM", "notnull": false, "pk": 0}], "sample": [[1, "2009-01-01", "Leonie Köhler", "Germany", "Steve Johnson", "Balls to the Wall", "Balls to the Wall", "Accept", "Rock", "Protected AAC audio file", 0.99, 1, 1.98], [1, "2009-01-01", "Leonie Köhler", "Germany", "Steve Johnson", "Restless and Wild", "Restless and Wild", "Accept", "Rock", "Protected AAC audio file", 0.99, 1, 1.98], [2, "2009-01-02", "Bjørn Hansen", "Norway", "Margaret Park", "Put The Finger On You", "For Those About To Rock We Salute You", "AC/DC", "Rock", "MPEG audio file", 0.99, 1, 3.96]], "parents": [], "children": []}, "doc_invoice": {"name": "doc_invoice", "group": "other", "desc": "Document shape: one JSON document per invoice, with the customer and the lines nested inside.", "rows": 412, "cols": [{"name": "doc_id", "type": "INTEGER", "notnull": false, "pk": 1}, {"name": "doc", "type": "TEXT", "notnull": true, "pk": 0}], "sample": [[1, "{\"invoice\": 1, \"date\": \"2009-01-01\", \"customer\": {\"name\": \"L…"], [2, "{\"invoice\": 2, \"date\": \"2009-01-02\", \"customer\": {\"name\": \"B…"], [3, "{\"invoice\": 3, \"date\": \"2009-01-03\", \"customer\": {\"name\": \"D…"]], "parents": [], "children": []}}, "groups": [["oltp", "Chinook tables (3NF)", ["Artist", "Album", "Track", "Genre", "MediaType", "Playlist", "PlaylistTrack", "Invoice", "InvoiceLine", "Customer", "Employee"]], ["star", "Star schema", ["fact_sales", "dim_customer", "dim_track", "dim_date"]], ["other", "Other shapes of the same sales", ["flat_sales", "doc_invoice"]]]};
+const T = DATA.tables;
+const box = document.getElementById("erdbox");
+const detail = document.getElementById("detail");
+let group = "oltp", current = null, zoom = 1;
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const svgOf = (g) => box.querySelector(`div[data-g="${g}"] svg`);
+
+function showGroup(g) {
+  group = g;
+  box.querySelectorAll("div[data-g]").forEach((d) => (d.hidden = d.dataset.g !== g));
+  document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.g === g));
+  fit();
+  mark();
+}
+
+function mark() {
+  const svg = svgOf(group);
+  svg.querySelectorAll(".node, .edge").forEach((n) => n.classList.remove("sel", "nb", "hl"));
+  const t = current && T[current];
+  const inThis = t && svg.querySelector("#t_" + CSS.escape(current));
+  svg.classList.toggle("focus", !!inThis);
+  if (!inThis) return;
+  inThis.classList.add("sel");
+  [...t.parents, ...t.children].forEach((n) => svg.querySelector("#t_" + CSS.escape(n))?.classList.add("nb"));
+  svg.querySelectorAll(".edge").forEach((e) => {
+    const [p, c] = e.id.slice(2).split("__");
+    if (p === current || c === current) e.classList.add("hl");
+  });
+}
+
+function link(n) { return `<a data-t="${esc(n)}">${esc(n)}</a>`; }
+
+function select(name, scroll) {
+  current = name;
+  const t = T[name];
+  if (t.group !== "other" && t.group !== group) showGroup(t.group); else mark();
+  const cols = t.cols.map((c) => `<tr><td class="k">${c.pk ? "<u>" + esc(c.name) + "</u>" : esc(c.name)}</td><td>${esc(c.type)}</td>
+    <td>${c.pk ? "primary key" : ""}${c.ref ? (c.pk ? ", " : "") + "foreign key" : ""}</td>
+    <td class="ref">${c.ref ? "→ " + link(c.ref.split(".")[0]) + "." + esc(c.ref.split(".")[1]) : ""}</td>
+    <td class="muted">${c.notnull && !c.pk ? "required" : ""}</td></tr>`).join("");
+  const head = t.cols.map((c) => `<th>${esc(c.name)}</th>`).join("");
+  const rows = t.sample.map((r) => "<tr>" + r.map((v) => `<td>${v === null ? '<span class="muted">NULL</span>' : esc(v)}</td>`).join("") + "</tr>").join("");
+  detail.innerHTML = `<h2>${esc(name)}</h2>
+    <div class="meta">${t.rows.toLocaleString()} rows · ${t.cols.length} columns</div>
+    <p style="margin:0 0 6px">${esc(t.desc)}</p>
+    <p class="rel muted" style="margin:0">${t.parents.length ? "Points to: " + t.parents.map(link).join(", ") : ""}
+      ${t.parents.length && t.children.length ? " · " : ""}${t.children.length ? "Pointed to by: " + t.children.map(link).join(", ") : ""}</p>
+    <table><tr><th>Column</th><th>Type</th><th>Key</th><th>References</th><th></th></tr>${cols}</table>
+    <div class="samp"><div class="muted" style="font-size:.85rem">First 3 rows</div><table><tr>${head}</tr>${rows}</table></div>`;
+  document.querySelectorAll("#tlist tr[data-t]").forEach((tr) => tr.classList.toggle("cur", tr.dataset.t === name));
+  if (scroll) detail.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function list() {
+  document.getElementById("tlist").innerHTML = "<h2 style=\"margin:0;font-size:1.1rem\">All tables</h2>" + DATA.groups.map(([g, label, names]) =>
+    `<h3>${esc(label)}</h3><table><tr><th>Table</th><th class="num">Rows</th><th class="num">Columns</th><th>What one row is</th></tr>` +
+    names.map((n) => `<tr data-t="${esc(n)}"><td>${link(n)}</td><td class="num">${T[n].rows.toLocaleString()}</td>
+      <td class="num">${T[n].cols.length}</td><td>${esc(T[n].desc)}</td></tr>`).join("") + "</table>").join("");
+}
+
+function find(q) {
+  q = q.trim().toLowerCase();
+  const hits = q ? Object.values(T).filter((t) => t.name.toLowerCase().includes(q) || t.cols.some((c) => c.name.toLowerCase().includes(q))).map((t) => t.name) : [];
+  document.querySelectorAll("#erdbox .node").forEach((n) => n.classList.toggle("hit", hits.includes(n.id.slice(2))));
+  document.querySelectorAll("#tlist tr[data-t]").forEach((tr) => tr.classList.toggle("hit", hits.includes(tr.dataset.t)));
+  document.getElementById("findout").textContent = q ? (hits.length ? "In: " + hits.join(", ") : "No table has that column") : "";
+}
+
+function setZoom(z) {
+  zoom = Math.max(0.3, Math.min(3, z));
+  box.querySelectorAll("svg").forEach((s) => { s.style.width = (s.viewBox.baseVal.width * zoom) + "px"; });
+}
+function fit() {
+  const s = svgOf(group), vb = s.viewBox.baseVal;
+  const byW = (box.clientWidth - 8) / vb.width;
+  const byH = (window.innerHeight * 0.78 - 8) / vb.height;
+  setZoom(Math.min(1.2, byW, Math.max(byH, 0.75 * byW)));   // whole diagram in view, unless text would get too small
+}
+
+document.getElementById("tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) showGroup(b.dataset.g); });
+box.addEventListener("click", (e) => {
+  const n = e.target.closest(".node");
+  if (n) select(n.id.slice(2), false);
+  else { current = null; mark(); }
+});
+[detail, document.getElementById("tlist")].forEach((el) => el.addEventListener("click", (e) => {
+  const a = e.target.closest("a[data-t]");
+  if (a) { e.preventDefault(); select(a.dataset.t, el.id === "tlist"); }
+}));
+document.getElementById("find").addEventListener("input", (e) => find(e.target.value));
+document.getElementById("zin").onclick = () => setZoom(zoom * 1.2);
+document.getElementById("zout").onclick = () => setZoom(zoom / 1.2);
+document.getElementById("zfit").onclick = fit;
+window.addEventListener("resize", () => { if (box.isConnected) fit(); });
+
+list();
+showGroup("oltp");
+</script>
+{% endraw %}
+{% endblock %}

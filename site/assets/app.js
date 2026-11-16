@@ -145,6 +145,9 @@ const ROUTES = [
 
   ["GET", "/w09/", { rpc: "w09_index", tpl: "w09/index.html", prep: w09Prep }],
   ["POST", "/w09/save", { rpc: "w09_save" }],
+
+  // w10: Chinook database reference (interactive ERD and table list), no data of its own
+  ["GET", "/w10/", { rpc: "me", tpl: "w10/index.html" }],
 ];
 
 // w08 Team Working Document: each section's fields with their saved values, ready for the template
@@ -267,6 +270,7 @@ const ENDPOINTS = {
   "admin.w08_live": "/admin/w08/analytics", "admin.w08_control": "/admin/w08/control",
   "admin.w08_section": "/admin/w08/section", "admin.w08_doclock": "/admin/w08/doclock", "admin.w08_docs": "/admin/w08/docs",
   "week09.index": "/w09/", "week09.save": "/w09/save",
+  "week10.index": "/w10/",
   "admin.w09_live": "/admin/w09/analytics", "admin.w09_control": "/admin/w09/control", "admin.w09_section": "/admin/w09/section",
   "admin.project_key": "/admin/project/key",
 };

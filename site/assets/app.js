@@ -50,7 +50,8 @@ export async function call(route, args = {}) {
 // spec.prep : extra context derived in the browser   spec.download : turns the result into a file
 const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07", w08: "w08", w09: "w09" }[slug]);
 const ROUTES = [
-  ["GET", "/", { rpc: "home", tpl: "index.html" }],
+  ["GET", "/", { rpc: "home", tpl: "index.html", prep: (c) => ({   // Week 10 has no submissions table, so it is listed here, not in app.lectures
+    items: (c.items || []).some((x) => x[0] === "w10") ? c.items : [...(c.items || []), ["w10", "Lecture 10 · SQL joins, subqueries and the load pipeline", true]] }) }],
   ["GET", "/login", { rpc: "me", tpl: "login.html", prep: (c, p, q) => ({ username: q.username || "" }) }],
   ["POST", "/login", { rpc: "login", args: (p, q) => ({ next: q.next }) }],
   ["GET", "/logout", { rpc: "logout" }],

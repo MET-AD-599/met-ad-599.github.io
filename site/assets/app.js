@@ -48,10 +48,13 @@ export async function call(route, args = {}) {
 // ---- routes: [method, pattern, spec] -----------------------------------------------------------------
 // spec.rpc  : the app.r_<rpc> function to call      spec.tpl : template to render with its result
 // spec.prep : extra context derived in the browser   spec.download : turns the result into a file
-const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07", w08: "w08", w09: "w09", w10: "w10" }[slug]);
+const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07", w08: "w08", w09: "w09", w10: "w10", w11: "w11" }[slug]);
 const ROUTES = [
-  ["GET", "/", { rpc: "home", tpl: "index.html", prep: (c) => ({   // Week 10 has no submissions table, so it is listed here, not in app.lectures
-    items: (c.items || []).some((x) => x[0] === "w10") ? c.items : [...(c.items || []), ["w10", "Week 10 · Querying with SQL", true]] }) }],
+  ["GET", "/", { rpc: "home", tpl: "index.html", prep: (c) => {   // Weeks 10 and 11 pages need no submissions table: listed here if app.lectures lacks them
+    let items = c.items || [];
+    for (const it of [["w10", "Week 10 · Querying with SQL", true], ["w11", "Week 11 · Window functions", true]])
+      if (!items.some((x) => x[0] === it[0])) items = [...items, it];
+    return { items }; } }],
   ["GET", "/login", { rpc: "me", tpl: "login.html", prep: (c, p, q) => ({ username: q.username || "" }) }],
   ["POST", "/login", { rpc: "login", args: (p, q) => ({ next: q.next }) }],
   ["GET", "/logout", { rpc: "logout" }],
@@ -152,6 +155,8 @@ const ROUTES = [
   ["GET", "/w10/date", { rpc: "w10_index", tpl: "w10/date.html" }],
   ["POST", "/w10/save", { rpc: "w10_save" }],
   ["GET", "/w10/etl", { rpc: "me", tpl: "w10/etl.html" }],
+  // w11: window function visualizer (Chinook rows built into the page; no database, no sign-in needed)
+  ["GET", "/w11/", { rpc: "me", tpl: "w11/index.html" }],
 ];
 
 // w08 Team Working Document: each section's fields with their saved values, ready for the template
@@ -275,6 +280,7 @@ const ENDPOINTS = {
   "admin.w08_section": "/admin/w08/section", "admin.w08_doclock": "/admin/w08/doclock", "admin.w08_docs": "/admin/w08/docs",
   "week09.index": "/w09/", "week09.save": "/w09/save",
   "week10.index": "/w10/", "week10.date": "/w10/date", "week10.save": "/w10/save", "week10.etl": "/w10/etl",
+  "week11.index": "/w11/",
   "admin.w09_live": "/admin/w09/analytics", "admin.w09_control": "/admin/w09/control", "admin.w09_section": "/admin/w09/section",
   "admin.project_key": "/admin/project/key",
 };

@@ -1,59 +1,23 @@
 {% extends "base.html" %}
 {% block title %}AD 599 · Week 11 · Window functions{% endblock %}
-{% block wrapclass %}wide{% endblock %}
 {% block head %}
 <style>
-  .w11 { --fr: #fff1cc; --fr-line: #d99a00; --src: #dbe7fb; --src-line: #3b6fd1; --peer: #efe3f8; --peer-line: #9b59b6; }
-  .w11 .presets { display: flex; gap: 8px; flex-wrap: wrap; }
-  .w11 .presets button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 14px; font: inherit; font-size: .9rem; font-weight: 600; cursor: pointer; color: var(--ink); }
-  .w11 .presets button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-  .w11 .say { margin: 12px 0 0; font-size: .95rem; }
-  .w11 .say:empty { display: none; }
-  .w11 .layout { display: grid; grid-template-columns: 360px 1fr; gap: 14px; align-items: start; }
-  @media (max-width: 900px) { .w11 .layout { grid-template-columns: 1fr; } .w11 .layout > .card:last-child { order: -1; } }
-  .w11 .ctrls label.h { display: block; font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 14px 0 4px; }
-  .w11 .ctrls label.h:first-child { margin-top: 0; }
-  .w11 .ctrls select, .w11 .ctrls input[type=number] { padding: 6px 8px; font-size: .9rem; border: 1px solid var(--line); border-radius: 6px; background: #fff; font-family: inherit; }
-  .w11 .ctrls input[type=number] { width: 58px; }
-  .w11 .ctrls .line { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 4px 0; }
-  .w11 .ctrls .line select { flex: 1 1 auto; min-width: 0; }
-  .w11 .ctrls .chk { font-size: .85rem; display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; }
-  .w11 .ctrls .note { font-size: .8rem; color: var(--muted); margin: 4px 0 0; }
-  .w11 .ctrls .dsnote { font-size: .8rem; color: var(--muted); margin: 4px 0 0; }
-  .w11 pre.sql { font-size: .8rem; white-space: pre-wrap; margin: 6px 0 0; }
-  .w11 .stepbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .w11 .stepbar button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 14px; font: inherit; font-weight: 600; cursor: pointer; }
-  .w11 .stepbar button.primary2 { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .w11 .stepbar button:disabled { opacity: .35; cursor: default; }
-  .w11 .stepbar .sp { flex: 1; }
-  .w11 .stepbar .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-  .w11 .stepbar .seg button { border: 0; border-radius: 0; padding: 7px 12px; font-size: .85rem; }
-  .w11 .stepbar .seg button.on { background: var(--ink); color: #fff; }
-  .w11 .explain { border-left: 4px solid var(--ink); background: #f6f5f1; border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 12px 0; font-size: .95rem; min-height: 72px; }
-  .w11 .explain .t { font-weight: 700; margin-bottom: 4px; }
-  .w11 .explain div { margin: 2px 0; }
-  .w11 .explain code { background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font-size: .88em; }
-  .w11 table.win { font-size: .9rem; border-collapse: separate; border-spacing: 0; }
-  .w11 table.win th { position: sticky; top: 0; background: #fff; border-bottom: 2px solid var(--line); }
-  .w11 table.win td { border-bottom: 1px solid var(--line); transition: background .25s, opacity .25s; cursor: pointer; }
-  .w11 table.win td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .w11 table.win th.res, .w11 table.win td.res { border-left: 2px solid var(--ink); font-weight: 700; text-align: right; min-width: 90px; }
-  .w11 table.win td.pos { color: var(--muted); font-size: .8rem; width: 34px; }
-  .w11 table.win tr.pstart td { border-top: 3px solid var(--ink); }
-  .w11 table.win tr.out td { opacity: .32; }
-  .w11 table.win tr.fr td { background: var(--fr); }
-  .w11 table.win tr.fr td:first-child { box-shadow: inset 4px 0 0 var(--fr-line); }
-  .w11 table.win tr.peer td { background: var(--peer); }
-  .w11 table.win tr.peer td:first-child { box-shadow: inset 4px 0 0 var(--peer-line); }
-  .w11 table.win tr.src td { background: var(--src); }
-  .w11 table.win tr.src td:first-child { box-shadow: inset 4px 0 0 var(--src-line); }
-  .w11 table.win tr.cur td { font-weight: 700; border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
-  .w11 table.win tr.cur td:first-child { border-left: 2px solid var(--accent); }
-  .w11 table.win tr.cur td:last-child { border-right: 2px solid var(--accent); }
-  .w11 table.win td.res .hid { color: #c8c6bf; font-weight: 400; }
-  .w11 table.win td.res .null { color: var(--muted); font-weight: 400; font-style: italic; }
-  .w11 .legend3 { display: flex; gap: 16px; flex-wrap: wrap; font-size: .82rem; color: var(--muted); margin-top: 10px; }
-  .w11 .legend3 i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+  .w11 .pick { display: flex; gap: 8px; flex-wrap: wrap; }
+  .w11 .pick button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer; color: var(--ink); }
+  .w11 .pick button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .w11 pre.expr { font-size: .95rem; white-space: pre-wrap; margin: 16px 0 8px; }
+  .w11 .say { margin: 0; }
+  .w11 .nav { display: flex; gap: 8px; align-items: center; }
+  .w11 .nav button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 8px 18px; font: inherit; font-weight: 700; cursor: pointer; }
+  .w11 .nav button:disabled { opacity: .3; cursor: default; }
+  .w11 .why { margin: 12px 0; padding: 10px 14px; background: #f6f5f1; border-radius: 8px; min-height: 48px; }
+  .w11 table td { cursor: pointer; transition: background .2s, opacity .2s; }
+  .w11 table td.res, .w11 table th.res { text-align: right; font-weight: 700; border-left: 2px solid var(--ink); }
+  .w11 tr.use td { background: #fff1cc; }
+  .w11 tr.cur td { background: #fff1cc; font-weight: 700; box-shadow: inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
+  .w11 tr.other td { opacity: .3; }
+  .w11 tr.newgroup td { border-top: 3px solid var(--ink); }
+  .w11 .note { font-size: .85rem; color: var(--muted); margin: 10px 0 0; }
 </style>
 {% endblock %}
 {% block body %}
@@ -61,68 +25,15 @@
 {% raw %}
 <div class="w11">
 <div class="card">
-  <div class="presets" id="presets"></div>
+  <div class="pick" id="pick"></div>
+  <pre class="expr" id="expr"></pre>
   <p class="say" id="say"></p>
 </div>
-
-<div class="layout">
-  <div class="card ctrls">
-    <label class="h">Data</label>
-    <select id="ds"></select>
-    <p class="dsnote" id="dsnote"></p>
-
-    <label class="h">Function</label>
-    <div class="line">
-      <select id="fn"></select>
-      <select id="arg" title="column"></select>
-      <span class="chk" id="nbox"><span id="nlbl">n</span> <input type="number" id="n" min="1" max="20" value="1"></span>
-    </div>
-
-    <label class="h">PARTITION BY</label>
-    <select id="part"></select>
-
-    <label class="h">ORDER BY</label>
-    <div class="line"><select id="o1"></select><span class="chk"><input type="checkbox" id="d1"> DESC</span></div>
-    <div class="line"><span class="muted" style="font-size:.85rem">then</span><select id="o2"></select><span class="chk"><input type="checkbox" id="d2"> DESC</span></div>
-
-    <div id="framebox">
-      <label class="h">Frame</label>
-      <select id="fmode">
-        <option value="default">Default (not written)</option>
-        <option value="ROWS">ROWS BETWEEN</option>
-        <option value="RANGE">RANGE BETWEEN</option>
-      </select>
-      <div id="fbounds">
-        <div class="line"><select id="fs"></select><input type="number" id="fsn" min="0" max="20" value="2"></div>
-        <div class="line"><span class="muted" style="font-size:.85rem">AND</span><select id="fe"></select><input type="number" id="fen" min="0" max="20" value="1"></div>
-      </div>
-      <p class="note" id="fnote"></p>
-    </div>
-    <p class="note" id="noframe"></p>
-
-    <label class="h">The query</label>
-    <pre class="sql" id="sql"></pre>
-  </div>
-
-  <div class="card">
-    <div class="stepbar">
-      <button type="button" id="prev">◀ Previous row</button>
-      <button type="button" id="next" class="primary2">Next row ▶</button>
-      <button type="button" id="play">▶ Play</button>
-      <span class="sp"></span>
-      <span class="muted" style="font-size:.85rem">Results</span>
-      <span class="seg"><button type="button" id="mStep" class="on">as I step</button><button type="button" id="mAll">all</button></span>
-    </div>
-    <div class="explain" id="explain"></div>
-    <div style="overflow-x:auto"><table class="win" id="tbl"></table></div>
-    <div class="legend3">
-      <span><i style="background:#fff1cc;box-shadow:inset 3px 0 0 #d99a00"></i>in the frame: the rows the function adds up</span>
-      <span><i style="background:#efe3f8;box-shadow:inset 3px 0 0 #9b59b6"></i>tied rows (same ORDER BY value) or the same bucket</span>
-      <span><i style="background:#dbe7fb;box-shadow:inset 3px 0 0 #3b6fd1"></i>the row LAG or LEAD reads</span>
-      <span><i style="border:2px solid #cc0000"></i>the current row</span>
-      <span>Faded rows: other partitions, which the window never sees. Click any row to make it current; the arrow keys step too.</span>
-    </div>
-  </div>
+<div class="card">
+  <div class="nav"><button type="button" id="prev">◀</button><button type="button" id="next">▶</button><span class="muted" id="pos"></span></div>
+  <div class="why" id="why"></div>
+  <table id="tbl"></table>
+  <p class="note">Red outline: the current row. Yellow: the rows the window uses for it. Faded: another group, which the window never sees.</p>
 </div>
 </div>
 <script>
@@ -235,233 +146,73 @@ function w11Compute(rows, spec) {
 }
 
 
-const W11_DATA = [{"id": "invoices", "label": "Invoices of 3 customers", "note": "Every invoice of customers 1, 2 and 3.", "source": "Invoice WHERE CustomerId IN (1, 2, 3)", "num": ["Total"], "partition": ["CustomerId"], "order": ["InvoiceDate", "InvoiceId", "Total"], "cols": ["InvoiceId", "CustomerId", "InvoiceDate", "Total"], "rows": [{"InvoiceId": 1, "CustomerId": 2, "InvoiceDate": "2009-01-01", "Total": 1.98}, {"InvoiceId": 12, "CustomerId": 2, "InvoiceDate": "2009-02-11", "Total": 13.86}, {"InvoiceId": 67, "CustomerId": 2, "InvoiceDate": "2009-10-12", "Total": 8.91}, {"InvoiceId": 98, "CustomerId": 1, "InvoiceDate": "2010-03-11", "Total": 3.98}, {"InvoiceId": 99, "CustomerId": 3, "InvoiceDate": "2010-03-11", "Total": 3.98}, {"InvoiceId": 110, "CustomerId": 3, "InvoiceDate": "2010-04-21", "Total": 13.86}, {"InvoiceId": 121, "CustomerId": 1, "InvoiceDate": "2010-06-13", "Total": 3.96}, {"InvoiceId": 143, "CustomerId": 1, "InvoiceDate": "2010-09-15", "Total": 5.94}, {"InvoiceId": 165, "CustomerId": 3, "InvoiceDate": "2010-12-20", "Total": 8.91}, {"InvoiceId": 195, "CustomerId": 1, "InvoiceDate": "2011-05-06", "Total": 0.99}, {"InvoiceId": 196, "CustomerId": 2, "InvoiceDate": "2011-05-19", "Total": 1.98}, {"InvoiceId": 219, "CustomerId": 2, "InvoiceDate": "2011-08-21", "Total": 3.96}, {"InvoiceId": 241, "CustomerId": 2, "InvoiceDate": "2011-11-23", "Total": 5.94}, {"InvoiceId": 293, "CustomerId": 2, "InvoiceDate": "2012-07-13", "Total": 0.99}, {"InvoiceId": 294, "CustomerId": 3, "InvoiceDate": "2012-07-26", "Total": 1.98}, {"InvoiceId": 316, "CustomerId": 1, "InvoiceDate": "2012-10-27", "Total": 1.98}, {"InvoiceId": 317, "CustomerId": 3, "InvoiceDate": "2012-10-28", "Total": 3.96}, {"InvoiceId": 327, "CustomerId": 1, "InvoiceDate": "2012-12-07", "Total": 13.86}, {"InvoiceId": 339, "CustomerId": 3, "InvoiceDate": "2013-01-30", "Total": 5.94}, {"InvoiceId": 382, "CustomerId": 1, "InvoiceDate": "2013-08-07", "Total": 8.91}, {"InvoiceId": 391, "CustomerId": 3, "InvoiceDate": "2013-09-20", "Total": 0.99}]}, {"id": "monthly", "label": "Monthly revenue, 2012 to 2013", "note": "One row per month: monthly = SUM(Total) from Invoice, grouped by month.", "source": "monthly", "comment": "monthly: one row per month, 2012 and 2013 (revenue = SUM(Total) from Invoice)", "num": ["revenue"], "partition": ["year"], "order": ["month", "revenue"], "cols": ["year", "month", "revenue"], "rows": [{"year": "2012", "month": "2012-01", "revenue": 37.62}, {"year": "2012", "month": "2012-02", "revenue": 37.62}, {"year": "2012", "month": "2012-03", "revenue": 37.62}, {"year": "2012", "month": "2012-04", "revenue": 37.62}, {"year": "2012", "month": "2012-05", "revenue": 37.62}, {"year": "2012", "month": "2012-06", "revenue": 37.62}, {"year": "2012", "month": "2012-07", "revenue": 39.62}, {"year": "2012", "month": "2012-08", "revenue": 47.62}, {"year": "2012", "month": "2012-09", "revenue": 46.71}, {"year": "2012", "month": "2012-10", "revenue": 42.62}, {"year": "2012", "month": "2012-11", "revenue": 37.62}, {"year": "2012", "month": "2012-12", "revenue": 37.62}, {"year": "2013", "month": "2013-01", "revenue": 37.62}, {"year": "2013", "month": "2013-02", "revenue": 27.72}, {"year": "2013", "month": "2013-03", "revenue": 37.62}, {"year": "2013", "month": "2013-04", "revenue": 33.66}, {"year": "2013", "month": "2013-05", "revenue": 37.62}, {"year": "2013", "month": "2013-06", "revenue": 37.62}, {"year": "2013", "month": "2013-07", "revenue": 37.62}, {"year": "2013", "month": "2013-08", "revenue": 37.62}, {"year": "2013", "month": "2013-09", "revenue": 37.62}, {"year": "2013", "month": "2013-10", "revenue": 37.62}, {"year": "2013", "month": "2013-11", "revenue": 49.62}, {"year": "2013", "month": "2013-12", "revenue": 38.62}]}, {"id": "usa", "label": "USA customers by spend", "note": "One row per USA customer, with total spend rounded to cents.", "source": "spend", "comment": "spend: one row per USA customer (spent = SUM(Total), rounded to cents)", "num": ["spent"], "partition": [], "order": ["spent", "customer"], "cols": ["customer", "spent"], "rows": [{"customer": "Frank Harris", "spent": 37.62}, {"customer": "Jack Smith", "spent": 39.62}, {"customer": "Michelle Brooks", "spent": 37.62}, {"customer": "Tim Goyer", "spent": 38.62}, {"customer": "Dan Miller", "spent": 39.62}, {"customer": "Kathy Chase", "spent": 37.62}, {"customer": "Heather Leacock", "spent": 39.62}, {"customer": "John Gordon", "spent": 37.62}, {"customer": "Frank Ralston", "spent": 43.62}, {"customer": "Victor Stevens", "spent": 42.62}, {"customer": "Richard Cunningham", "spent": 47.62}, {"customer": "Patrick Gray", "spent": 37.62}, {"customer": "Julia Barnett", "spent": 43.62}]}, {"id": "first14", "label": "The first 14 invoices", "note": "Invoices 1 to 14. Invoices 7 and 8 share a date.", "source": "Invoice WHERE InvoiceId <= 14", "num": ["Total"], "partition": [], "order": ["InvoiceDate", "InvoiceId", "Total"], "cols": ["InvoiceId", "InvoiceDate", "Total"], "rows": [{"InvoiceId": 1, "InvoiceDate": "2009-01-01", "Total": 1.98}, {"InvoiceId": 2, "InvoiceDate": "2009-01-02", "Total": 3.96}, {"InvoiceId": 3, "InvoiceDate": "2009-01-03", "Total": 5.94}, {"InvoiceId": 4, "InvoiceDate": "2009-01-06", "Total": 8.91}, {"InvoiceId": 5, "InvoiceDate": "2009-01-11", "Total": 13.86}, {"InvoiceId": 6, "InvoiceDate": "2009-01-19", "Total": 0.99}, {"InvoiceId": 7, "InvoiceDate": "2009-02-01", "Total": 1.98}, {"InvoiceId": 8, "InvoiceDate": "2009-02-01", "Total": 1.98}, {"InvoiceId": 9, "InvoiceDate": "2009-02-02", "Total": 3.96}, {"InvoiceId": 10, "InvoiceDate": "2009-02-03", "Total": 5.94}, {"InvoiceId": 11, "InvoiceDate": "2009-02-06", "Total": 8.91}, {"InvoiceId": 12, "InvoiceDate": "2009-02-11", "Total": 13.86}, {"InvoiceId": 13, "InvoiceDate": "2009-02-19", "Total": 0.99}, {"InvoiceId": 14, "InvoiceDate": "2009-03-04", "Total": 1.98}]}, {"id": "yearly", "label": "Yearly revenue, 3 countries", "note": "One row per country per year with sales. Argentina sold nothing in 2009 and 2012, so those rows do not exist.", "source": "yearly", "comment": "yearly: one row per country per year with sales", "num": ["revenue", "year"], "partition": ["country"], "order": ["year", "revenue"], "cols": ["country", "year", "revenue"], "rows": [{"country": "Argentina", "year": 2010, "revenue": 11.88}, {"country": "Argentina", "year": 2011, "revenue": 0.99}, {"country": "Argentina", "year": 2013, "revenue": 24.75}, {"country": "Canada", "year": 2009, "revenue": 57.42}, {"country": "Canada", "year": 2010, "revenue": 76.26}, {"country": "Canada", "year": 2011, "revenue": 55.44}, {"country": "Canada", "year": 2012, "revenue": 42.57}, {"country": "Canada", "year": 2013, "revenue": 72.27}, {"country": "USA", "year": 2009, "revenue": 103.95}, {"country": "USA", "year": 2010, "revenue": 102.98}, {"country": "USA", "year": 2011, "revenue": 103.01}, {"country": "USA", "year": 2012, "revenue": 127.98}, {"country": "USA", "year": 2013, "revenue": 85.14}]}];
-const W11_PRESETS = [{"id": "group", "label": "1 · Group total on every row", "ds": "invoices", "spec": {"fn": "SUM", "arg": "Total", "partition": ["CustomerId"], "order": [], "frame": {"mode": "default"}}, "say": "No ORDER BY: every row's window is its whole partition, so each invoice carries its customer's total."}, {"id": "ytd", "label": "2 · Running total (year to date)", "ds": "monthly", "spec": {"fn": "SUM", "arg": "revenue", "partition": ["year"], "order": [{"col": "month", "desc": false}], "frame": {"mode": "default"}}, "say": "ORDER BY makes the frame run from the partition's first row to the current row. January starts a new partition."}, {"id": "ma", "label": "3 · Moving average", "ds": "monthly", "spec": {"fn": "AVG", "arg": "revenue", "partition": [], "order": [{"col": "month", "desc": false}], "frame": {"mode": "ROWS", "start": {"kind": "P", "n": 2}, "end": {"kind": "CR"}}}, "say": "ROWS BETWEEN 2 PRECEDING AND CURRENT ROW: three months at a time. Watch the first two rows."}, {"id": "tie", "label": "4 · The tie trap", "ds": "first14", "spec": {"fn": "SUM", "arg": "Total", "partition": [], "order": [{"col": "InvoiceDate", "desc": false}], "frame": {"mode": "default"}}, "say": "The default frame (RANGE) takes in every row tied with the current one. Step to invoice 7, then add InvoiceId to ORDER BY."}, {"id": "rank", "label": "5 · Ranks and ties", "ds": "usa", "spec": {"fn": "RANK", "arg": "spent", "partition": [], "order": [{"col": "spent", "desc": true}], "frame": {"mode": "default"}}, "say": "Tied rows share a rank. Switch to ROW_NUMBER and DENSE_RANK and compare."}, {"id": "lag", "label": "6 · LAG and a missing year", "ds": "yearly", "spec": {"fn": "LAG", "arg": "revenue", "partition": ["country"], "order": [{"col": "year", "desc": false}], "frame": {"mode": "default"}, "n": 1}, "say": "LAG reads the previous row. Step to Argentina 2013: the previous row is 2011, not 2012."}, {"id": "ntile", "label": "7 · NTILE splits ties", "ds": "usa", "spec": {"fn": "NTILE", "arg": "spent", "partition": [], "order": [{"col": "spent", "desc": true}], "frame": {"mode": "default"}, "n": 4}, "say": "NTILE counts rows, not values: the five customers who spent 37.62 end up in two buckets."}, {"id": "last", "label": "8 · LAST_VALUE surprise", "ds": "monthly", "spec": {"fn": "LAST_VALUE", "arg": "revenue", "partition": ["year"], "order": [{"col": "month", "desc": false}], "frame": {"mode": "default"}}, "say": "You might expect December's revenue on every row. The default frame stops at the current row. Set the frame end to UNBOUNDED FOLLOWING."}];
+const W11_DATA = [{"id": "invoices", "show": ["CustomerId", "InvoiceDate", "Total"], "group": "customer {}", "num": ["Total"], "partition": ["CustomerId"], "order": ["InvoiceDate", "Total"], "cols": ["CustomerId", "InvoiceDate", "Total"], "rows": [{"CustomerId": 2, "InvoiceDate": "2009-01-01", "Total": 1.98}, {"CustomerId": 2, "InvoiceDate": "2009-02-11", "Total": 13.86}, {"CustomerId": 2, "InvoiceDate": "2009-10-12", "Total": 8.91}, {"CustomerId": 1, "InvoiceDate": "2010-03-11", "Total": 3.98}, {"CustomerId": 1, "InvoiceDate": "2010-06-13", "Total": 3.96}, {"CustomerId": 1, "InvoiceDate": "2010-09-15", "Total": 5.94}, {"CustomerId": 1, "InvoiceDate": "2011-05-06", "Total": 0.99}, {"CustomerId": 2, "InvoiceDate": "2011-05-19", "Total": 1.98}, {"CustomerId": 2, "InvoiceDate": "2011-08-21", "Total": 3.96}, {"CustomerId": 2, "InvoiceDate": "2011-11-23", "Total": 5.94}, {"CustomerId": 2, "InvoiceDate": "2012-07-13", "Total": 0.99}, {"CustomerId": 1, "InvoiceDate": "2012-10-27", "Total": 1.98}, {"CustomerId": 1, "InvoiceDate": "2012-12-07", "Total": 13.86}, {"CustomerId": 1, "InvoiceDate": "2013-08-07", "Total": 8.91}]}, {"id": "monthly", "show": ["month", "revenue"], "group": "{}", "num": ["revenue"], "partition": ["year"], "order": ["month", "revenue"], "cols": ["year", "month", "revenue"], "rows": [{"year": "2012", "month": "2012-07", "revenue": 39.62}, {"year": "2012", "month": "2012-08", "revenue": 47.62}, {"year": "2012", "month": "2012-09", "revenue": 46.71}, {"year": "2012", "month": "2012-10", "revenue": 42.62}, {"year": "2012", "month": "2012-11", "revenue": 37.62}, {"year": "2012", "month": "2012-12", "revenue": 37.62}, {"year": "2013", "month": "2013-01", "revenue": 37.62}, {"year": "2013", "month": "2013-02", "revenue": 27.72}, {"year": "2013", "month": "2013-03", "revenue": 37.62}, {"year": "2013", "month": "2013-04", "revenue": 33.66}, {"year": "2013", "month": "2013-05", "revenue": 37.62}, {"year": "2013", "month": "2013-06", "revenue": 37.62}]}, {"id": "usa", "show": ["customer", "spent"], "group": "{}", "num": ["spent"], "partition": [], "order": ["spent", "customer"], "cols": ["customer", "spent"], "rows": [{"customer": "Frank Harris", "spent": 37.62}, {"customer": "Jack Smith", "spent": 39.62}, {"customer": "Michelle Brooks", "spent": 37.62}, {"customer": "Tim Goyer", "spent": 38.62}, {"customer": "Dan Miller", "spent": 39.62}, {"customer": "Kathy Chase", "spent": 37.62}, {"customer": "Heather Leacock", "spent": 39.62}, {"customer": "John Gordon", "spent": 37.62}, {"customer": "Frank Ralston", "spent": 43.62}, {"customer": "Victor Stevens", "spent": 42.62}, {"customer": "Richard Cunningham", "spent": 47.62}, {"customer": "Patrick Gray", "spent": 37.62}, {"customer": "Julia Barnett", "spent": 43.62}]}, {"id": "yearly", "show": ["country", "year", "revenue"], "group": "{}", "num": ["revenue", "year"], "partition": ["country"], "order": ["year", "revenue"], "cols": ["country", "year", "revenue"], "rows": [{"country": "Argentina", "year": 2010, "revenue": 11.88}, {"country": "Argentina", "year": 2011, "revenue": 0.99}, {"country": "Argentina", "year": 2013, "revenue": 24.75}, {"country": "Canada", "year": 2009, "revenue": 57.42}, {"country": "Canada", "year": 2010, "revenue": 76.26}, {"country": "Canada", "year": 2011, "revenue": 55.44}, {"country": "Canada", "year": 2012, "revenue": 42.57}, {"country": "Canada", "year": 2013, "revenue": 72.27}]}];
+const W11_SCENARIOS = [{"id": "total", "label": "Total per group", "ds": "invoices", "expr": "SUM(Total) OVER (PARTITION BY CustomerId)", "say": "Every invoice gets its customer's total. No rows disappear.", "spec": {"fn": "SUM", "arg": "Total", "partition": ["CustomerId"], "order": [], "frame": {"mode": "default"}}}, {"id": "rank", "label": "Rank", "ds": "usa", "expr": "RANK() OVER (ORDER BY spent DESC)", "say": "Customers who spent the same share a rank, and the next rank skips.", "spec": {"fn": "RANK", "arg": "spent", "partition": [], "order": [{"col": "spent", "desc": true}], "frame": {"mode": "default"}}}, {"id": "running", "label": "Running total", "ds": "monthly", "expr": "SUM(revenue) OVER (PARTITION BY year ORDER BY month)", "say": "Adds up month by month, and starts again each January.", "spec": {"fn": "SUM", "arg": "revenue", "partition": ["year"], "order": [{"col": "month", "desc": false}], "frame": {"mode": "default"}}}, {"id": "moving", "label": "Moving average", "ds": "monthly", "expr": "AVG(revenue) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)", "say": "The average of this month and the two before it.", "spec": {"fn": "AVG", "arg": "revenue", "partition": [], "order": [{"col": "month", "desc": false}], "frame": {"mode": "ROWS", "start": {"kind": "P", "n": 2}, "end": {"kind": "CR"}}}}, {"id": "lag", "label": "Previous row", "ds": "yearly", "expr": "LAG(revenue) OVER (PARTITION BY country ORDER BY year)", "say": "Reads the row before. Argentina has no 2012, so its 2013 row reads 2011.", "spec": {"fn": "LAG", "arg": "revenue", "partition": ["country"], "order": [{"col": "year", "desc": false}], "frame": {"mode": "default"}, "n": 1}}, {"id": "ntile", "label": "Buckets", "ds": "usa", "expr": "NTILE(4) OVER (ORDER BY spent DESC)", "say": "Splits the 13 customers into 4 groups by row count, so tied customers can land in different groups.", "spec": {"fn": "NTILE", "arg": "spent", "partition": [], "order": [{"col": "spent", "desc": true}], "frame": {"mode": "default"}, "n": 4}}];
 
 (function () {
   const $ = (id) => document.getElementById(id);
-  const FNS = [
-    ["SUM", "SUM(x)"], ["AVG", "AVG(x)"], ["COUNT", "COUNT(*)"], ["MIN", "MIN(x)"], ["MAX", "MAX(x)"],
-    ["ROW_NUMBER", "ROW_NUMBER()"], ["RANK", "RANK()"], ["DENSE_RANK", "DENSE_RANK()"], ["NTILE", "NTILE(n)"],
-    ["PERCENT_RANK", "PERCENT_RANK()"], ["CUME_DIST", "CUME_DIST()"],
-    ["LAG", "LAG(x, n)"], ["LEAD", "LEAD(x, n)"], ["FIRST_VALUE", "FIRST_VALUE(x)"], ["LAST_VALUE", "LAST_VALUE(x)"],
-  ];
-  const NOARG = ["COUNT", "ROW_NUMBER", "RANK", "DENSE_RANK", "NTILE", "PERCENT_RANK", "CUME_DIST"];
-  const BOUNDS_S = [["UP", "UNBOUNDED PRECEDING"], ["P", "n PRECEDING"], ["CR", "CURRENT ROW"], ["F", "n FOLLOWING"]];
-  const BOUNDS_E = [["P", "n PRECEDING"], ["CR", "CURRENT ROW"], ["F", "n FOLLOWING"], ["UF", "UNBOUNDED FOLLOWING"]];
-  const LABEL = { invoices: (r) => "invoice " + r.InvoiceId, monthly: (r) => r.month, usa: (r) => r.customer,
-                  first14: (r) => "invoice " + r.InvoiceId, yearly: (r) => r.country + " " + r.year };
-
-  let ds = W11_DATA[0], cur = 0, showAll = false, timer = null, out = null;
-  const opt = (sel, items, val) => { sel.innerHTML = items.map(([v, t]) => `<option value="${v}">${t}</option>`).join(""); if (val !== undefined) sel.value = val; };
-  const fmt = (v) => v === null || v === undefined ? null : (typeof v === "number" ? (Number.isInteger(v) ? String(v) : v.toFixed(2)) : String(v));
+  const fmt = (v) => v === null || v === undefined ? "NULL" : (typeof v === "number" && !Number.isInteger(v) ? v.toFixed(2) : String(v));
   const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  let sc, ds, out, cur = 0;
 
-  // ---- controls ---------------------------------------------------------------------------------------
-  function fillDataControls() {
-    $("dsnote").textContent = ds.note;
-    opt($("arg"), ds.num.map((c) => [c, c]));
-    opt($("part"), [["", "(none)"], ...ds.partition.map((c) => [c, c])]);
-    const ords = [["", "(none)"], ...ds.order.map((c) => [c, c])];
-    opt($("o1"), ords); opt($("o2"), ords);
-  }
-  function spec() {
-    const order = [];
-    if ($("o1").value) order.push({ col: $("o1").value, desc: $("d1").checked });
-    if ($("o2").value && $("o2").value !== $("o1").value) order.push({ col: $("o2").value, desc: $("d2").checked });
-    const mode = $("fmode").value;
-    const frame = { mode };
-    if (mode !== "default") {
-      frame.start = { kind: $("fs").value, n: +$("fsn").value || 0 };
-      frame.end = { kind: $("fe").value, n: +$("fen").value || 0 };
-    }
-    return { fn: $("fn").value, arg: $("arg").value, partition: $("part").value ? [$("part").value] : [], order, frame, n: Math.max(1, +$("n").value || 1) };
-  }
-  function syncVisibility() {
-    const fn = $("fn").value;
-    $("arg").style.display = NOARG.includes(fn) ? "none" : "";
-    $("nbox").style.display = ["NTILE", "LAG", "LEAD"].includes(fn) ? "" : "none";
-    $("nlbl").textContent = fn === "NTILE" ? "buckets" : "rows back";
-    if (fn === "LEAD") $("nlbl").textContent = "rows ahead";
-    const framed = W11_FRAME_FNS.includes(fn);
-    $("framebox").style.display = framed ? "" : "none";
-    $("noframe").textContent = framed ? "" : fn + " ignores the frame: it looks at the whole partition in ORDER BY order.";
-    const mode = $("fmode").value;
-    $("fbounds").style.display = mode === "default" ? "none" : "";
-    const range = mode === "RANGE";
-    for (const o of $("fs").options) o.disabled = range && (o.value === "P" || o.value === "F");
-    for (const o of $("fe").options) o.disabled = range && (o.value === "P" || o.value === "F");
-    if (range && ["P", "F"].includes($("fs").value)) $("fs").value = "UP";
-    if (range && ["P", "F"].includes($("fe").value)) $("fe").value = "CR";
-    $("fsn").style.display = ["P", "F"].includes($("fs").value) ? "" : "none";
-    $("fen").style.display = ["P", "F"].includes($("fe").value) ? "" : "none";
-    const hasOrder = !!$("o1").value;
-    $("fnote").textContent = mode === "default"
-      ? (hasOrder ? "With ORDER BY, the default is RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW: from the first row to the current row and every row tied with it."
-                  : "Without ORDER BY, the default frame is the whole partition.")
-      : (range ? "RANGE counts in ORDER BY values, not rows: CURRENT ROW includes every tied row." : "ROWS counts physical rows, ignoring ties.");
+  function why() {
+    const i = out.display[cur], r = out.res[i], s = sc.spec, row = ds.rows[i];
+    const group = s.partition.length ? ds.group.replace("{}", r.partKey[0]) : "";
+    const v = (q) => fmt(ds.rows[q][s.arg]);
+    if (s.fn === "SUM" && !s.order.length) return `${r.frame.map(v).join(" + ")} = <b>${fmt(r.value)}</b>, the total for ${esc(group)}`;
+    if (s.fn === "SUM") return `${esc(group)} so far: ${r.frame.map(v).join(" + ")} = <b>${fmt(r.value)}</b>`;
+    if (s.fn === "AVG") return `(${r.frame.map(v).join(" + ")}) / ${r.frame.length} = <b>${fmt(r.value)}</b>` + (r.frame.length < 3 ? ` (this table starts in July, so only ${r.frame.length} month${r.frame.length > 1 ? "s" : ""})` : "");
+    if (s.fn === "RANK") { const ahead = r.value - 1; return `${ahead} customer${ahead === 1 ? "" : "s"} spent more than ${fmt(row[s.arg])}, so the rank is <b>${r.value}</b>` + (r.peers.length > 1 ? `, shared by ${r.peers.length} customers` : ""); }
+    if (s.fn === "LAG") return r.src === null ? `The first row for ${esc(group)}: nothing before it, so <b>NULL</b>` : `The row before is ${esc(group)} ${ds.rows[r.src].year}: <b>${fmt(r.value)}</b>`;
+    if (s.fn === "NTILE") return `Rows 1 to ${r.size} are split into 4 groups of 4, 3, 3 and 3 rows. Row ${r.pos + 1} is in group <b>${r.value}</b>`;
+    return "";
   }
 
-  // ---- SQL text -----------------------------------------------------------------------------------------
-  function bound(b) { return { UP: "UNBOUNDED PRECEDING", UF: "UNBOUNDED FOLLOWING", CR: "CURRENT ROW", P: b.n + " PRECEDING", F: b.n + " FOLLOWING" }[b.kind]; }
-  function callText(s) {
-    return { COUNT: "COUNT(*)", ROW_NUMBER: "ROW_NUMBER()", RANK: "RANK()", DENSE_RANK: "DENSE_RANK()", PERCENT_RANK: "PERCENT_RANK()",
-             CUME_DIST: "CUME_DIST()", NTILE: `NTILE(${s.n})`, LAG: s.n === 1 ? `LAG(${s.arg})` : `LAG(${s.arg}, ${s.n})`,
-             LEAD: s.n === 1 ? `LEAD(${s.arg})` : `LEAD(${s.arg}, ${s.n})` }[s.fn] || `${s.fn}(${s.arg})`;
-  }
-  function overText(s) {
-    const parts = [];
-    if (s.partition.length) parts.push("PARTITION BY " + s.partition.join(", "));
-    if (s.order.length) parts.push("ORDER BY " + s.order.map((o) => o.col + (o.desc ? " DESC" : "")).join(", "));
-    if (W11_FRAME_FNS.includes(s.fn) && s.frame.mode !== "default") parts.push(`${s.frame.mode} BETWEEN ${bound(s.frame.start)} AND ${bound(s.frame.end)}`);
-    return parts;
-  }
-  function sqlText(s) {
-    const ov = overText(s);
-    const over = ov.length ? "OVER (\n         " + ov.join("\n         ") + "\n       )" : "OVER ()";
-    const sortCols = [...s.partition, ...s.order.map((o) => o.col + (o.desc ? " DESC" : ""))];
-    return (ds.comment ? `-- ${ds.comment}\n` : "") + `SELECT ${ds.cols.join(", ")},\n       ${callText(s)} ${over} AS result\nFROM ${ds.source}` +
-           (sortCols.length ? `\nORDER BY ${sortCols.join(", ")};` : ";");
-  }
-
-  // ---- explanation for the current row -----------------------------------------------------------------
-  function explain(s) {
-    const i = out.display[cur], r = out.res[i], row = ds.rows[i];
-    const name = LABEL[ds.id](row);
-    const lines = [];
-    const pdesc = s.partition.length ? `Partition ${s.partition[0]} = ${esc(r.partKey[0])}: ${r.size} rows` : `No PARTITION BY: one partition of ${r.size} rows`;
-    lines.push(`${pdesc}. This is row ${r.pos + 1} of ${r.size}${s.order.length ? " in ORDER BY order" : " (no ORDER BY: table order)"}.`);
-    const val = fmt(r.value);
-    const shown = val === null ? "<b>NULL</b>" : `<b>${esc(val)}</b>`;
-    const pos = (q) => out.res[q].pos + 1;
-    if (W11_FRAME_FNS.includes(s.fn)) {
-      const fr = r.frame;
-      if (!fr.length) lines.push(`The frame is empty, so the result is ${shown}.`);
-      else {
-        const a = pos(fr[0]), b = pos(fr[fr.length - 1]);
-        let note = "";
-        const lastIn = out.res[fr[fr.length - 1]].pos;
-        if (lastIn > r.pos && (s.frame.mode === "default" || s.frame.mode === "RANGE") && s.order.length) note = ` It reaches past the current row because ${lastIn - r.pos} later row${lastIn - r.pos > 1 ? "s are" : " is"} tied with it.`;
-        lines.push(`Frame: rows ${a} to ${b} of the partition (${fr.length} row${fr.length > 1 ? "s" : ""}).${note}`);
-        const vals = fr.map((q) => ds.rows[q][s.arg]);
-        const list = vals.length <= 8 ? vals.map(fmt).join(" + ") : `${vals.length} values`;
-        if (s.fn === "SUM") lines.push(`SUM(${s.arg}) = ${list} = ${shown}`);
-        else if (s.fn === "AVG") lines.push(`AVG(${s.arg}) = (${list}) / ${vals.length} = ${shown}`);
-        else if (s.fn === "COUNT") lines.push(`COUNT(*) = ${shown} rows in the frame`);
-        else if (s.fn === "MIN" || s.fn === "MAX") lines.push(`${s.fn} of ${vals.length <= 8 ? vals.map(fmt).join(", ") : vals.length + " values"} = ${shown}`);
-        else if (s.fn === "FIRST_VALUE") lines.push(`The frame's first row is row ${a}: ${shown}`);
-        else if (s.fn === "LAST_VALUE") lines.push(`The frame's last row is row ${b}: ${shown}`);
-      }
-    } else if (s.fn === "LAG" || s.fn === "LEAD") {
-      const k = s.n;
-      if (r.src === null) lines.push(`There is no row ${k} ${s.fn === "LAG" ? "before" : "after"} this one in its partition, so ${s.fn} returns ${shown}.`);
-      else lines.push(`${k} row${k > 1 ? "s" : ""} ${s.fn === "LAG" ? "back" : "ahead"} is row ${pos(r.src)}, ${esc(LABEL[ds.id](ds.rows[r.src]))}: ${s.arg} = ${shown}`);
-      if (!s.order.length) lines.push("No ORDER BY: \"previous\" just means the previous row in table order.");
-    } else {
-      const ties = r.peers.length;
-      const tieTxt = s.fn === "NTILE" ? "" : (ties > 1 ? `It is tied with ${ties - 1} other row${ties > 2 ? "s" : ""} (same ORDER BY value).` : "No other row has the same ORDER BY value.");
-      if (!s.order.length && s.fn !== "ROW_NUMBER" && s.fn !== "NTILE") lines.push("No ORDER BY: every row is tied with every other.");
-      const first = Math.min(...r.peers.map(pos)), last = Math.max(...r.peers.map(pos));
-      if (s.fn === "ROW_NUMBER") lines.push(`ROW_NUMBER = its position in the partition = ${shown}. ${ties > 1 ? "Tied rows still get different numbers, in no guaranteed order." : ""}`);
-      else if (s.fn === "RANK") lines.push(`${tieTxt} RANK = 1 + rows ahead of its tie group (${first - 1}) = ${shown}`);
-      else if (s.fn === "DENSE_RANK") lines.push(`${tieTxt} DENSE_RANK = the number of its tie group, counting each group once = ${shown}`);
-      else if (s.fn === "PERCENT_RANK") lines.push(`${tieTxt} PERCENT_RANK = (rank - 1) / (rows - 1) = (${first} - 1) / (${r.size} - 1) = ${shown}`);
-      else if (s.fn === "CUME_DIST") lines.push(`${tieTxt} CUME_DIST = rows up to the end of its tie group / rows = ${last} / ${r.size} = ${shown}`);
-      else if (s.fn === "NTILE") {
-        const sizes = {};
-        for (const q of out.display) if (out.res[q].part === r.part) sizes[out.res[q].value] = (sizes[out.res[q].value] || 0) + 1;
-        lines.push(`NTILE(${s.n}) splits the ${r.size} rows into buckets of ${Object.values(sizes).join(", ")} rows, in order. Row ${r.pos + 1} is in bucket ${shown}.`);
-      }
-    }
-    $("explain").innerHTML = `<div class="t">Current row: ${esc(name)}</div>` + lines.map((l) => `<div>${l}</div>`).join("");
-  }
-
-  // ---- table ---------------------------------------------------------------------------------------------
   function draw() {
-    const s = spec();
-    out = w11Compute(ds.rows, s);
-    cur = Math.max(0, Math.min(cur, out.display.length - 1));
-    const ci = out.display[cur], cr = out.res[ci];
-    const mark = new Map();
-    if (cr.frame) cr.frame.forEach((q) => mark.set(q, "fr"));
-    if (cr.peers) cr.peers.forEach((q) => mark.set(q, "peer"));
-    if (cr.src !== null) mark.set(cr.src, "src");
-    const head = `<tr><th>#</th>${ds.cols.map((c) => `<th${ds.num.includes(c) ? ' class="num"' : ""}>${esc(c)}</th>`).join("")}<th class="res">${esc(callText(s))}</th></tr>`;
-    const body = out.display.map((i, k) => {
-      const r = out.res[i], row = ds.rows[i];
-      const cls = [];
-      if (k === 0 || out.res[out.display[k - 1]].part !== r.part) cls.push("pstart");
-      if (r.part !== cr.part) cls.push("out");
-      if (mark.has(i)) cls.push(mark.get(i));
+    out = w11Compute(ds.rows, sc.spec);
+    const i = out.display[cur], r = out.res[i];
+    const used = new Set([...(r.frame || []), ...(sc.spec.fn === "RANK" ? r.peers : []), ...(sc.spec.fn === "NTILE" ? r.peers : []), ...(r.src !== null ? [r.src] : [])]);
+    const head = `<tr>${ds.show.map((c) => `<th>${esc(c)}</th>`).join("")}<th class="res">result</th></tr>`;
+    const body = out.display.map((q, k) => {
+      const x = out.res[q], cls = [];
+      if (k > 0 && out.res[out.display[k - 1]].part !== x.part) cls.push("newgroup");
+      if (x.part !== r.part) cls.push("other");
+      if (used.has(q)) cls.push("use");
       if (k === cur) cls.push("cur");
-      const v = fmt(r.value);
-      const res = !showAll && k > cur ? '<span class="hid">?</span>' : (v === null ? '<span class="null">NULL</span>' : esc(v));
-      return `<tr class="${cls.join(" ")}" data-k="${k}"><td class="pos">${r.pos + 1}</td>${ds.cols.map((c) => `<td${typeof row[c] === "number" && ds.num.includes(c) ? ' class="num"' : ""}>${esc(fmt(row[c]))}</td>`).join("")}<td class="res">${res}</td></tr>`;
+      return `<tr class="${cls.join(" ")}" data-k="${k}">${ds.show.map((c) => `<td>${esc(fmt(ds.rows[q][c]))}</td>`).join("")}<td class="res">${k <= cur ? esc(fmt(x.value)) : ""}</td></tr>`;
     }).join("");
     $("tbl").innerHTML = head + body;
-    $("sql").textContent = sqlText(s);
+    $("why").innerHTML = why();
+    $("pos").textContent = `row ${cur + 1} of ${out.display.length}`;
     $("prev").disabled = cur === 0;
     $("next").disabled = cur === out.display.length - 1;
-    explain(s);
   }
 
-  function step(d) { cur = Math.max(0, Math.min(out.display.length - 1, cur + d)); draw(); }
-  function stopPlay() { if (timer) { clearInterval(timer); timer = null; $("play").textContent = "▶ Play"; } }
-  function changed() { stopPlay(); syncVisibility(); $("say").textContent = ""; for (const b of $("presets").children) b.classList.remove("on"); draw(); }
-
-  function applyPreset(p) {
-    stopPlay();
-    ds = W11_DATA.find((d) => d.id === p.ds);
-    $("ds").value = ds.id;
-    fillDataControls();
-    const s = p.spec;
-    $("fn").value = s.fn;
-    if (s.arg) $("arg").value = s.arg;
-    $("n").value = s.n || 1;
-    $("part").value = s.partition[0] || "";
-    $("o1").value = s.order[0] ? s.order[0].col : ""; $("d1").checked = !!(s.order[0] && s.order[0].desc);
-    $("o2").value = s.order[1] ? s.order[1].col : ""; $("d2").checked = !!(s.order[1] && s.order[1].desc);
-    $("fmode").value = s.frame.mode;
-    if (s.frame.start) { $("fs").value = s.frame.start.kind; $("fsn").value = s.frame.start.n || 0; }
-    if (s.frame.end) { $("fe").value = s.frame.end.kind; $("fen").value = s.frame.end.n || 0; }
+  function pick(id) {
+    sc = W11_SCENARIOS.find((x) => x.id === id);
+    ds = W11_DATA.find((d) => d.id === sc.ds);
     cur = 0;
-    syncVisibility();
-    $("say").textContent = p.say;
-    for (const b of $("presets").children) b.classList.toggle("on", b.dataset.id === p.id);
+    $("expr").textContent = sc.expr;
+    $("say").textContent = sc.say;
+    for (const b of $("pick").children) b.classList.toggle("on", b.dataset.id === id);
     draw();
   }
 
-  // ---- wiring --------------------------------------------------------------------------------------------
-  opt($("ds"), W11_DATA.map((d) => [d.id, d.label]));
-  opt($("fn"), FNS);
-  opt($("fs"), BOUNDS_S, "P");
-  opt($("fe"), BOUNDS_E, "CR");
-  $("presets").innerHTML = W11_PRESETS.map((p) => `<button type="button" data-id="${p.id}">${esc(p.label)}</button>`).join("");
-  $("presets").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) applyPreset(W11_PRESETS.find((p) => p.id === b.dataset.id)); });
-  $("ds").addEventListener("change", () => { ds = W11_DATA.find((d) => d.id === $("ds").value); fillDataControls(); cur = 0; changed(); });
-  for (const id of ["fn", "arg", "n", "part", "o1", "o2", "d1", "d2", "fmode", "fs", "fe", "fsn", "fen"]) $(id).addEventListener("change", changed);
-  for (const id of ["n", "fsn", "fen"]) $(id).addEventListener("input", changed);
-  $("prev").addEventListener("click", () => { stopPlay(); step(-1); });
-  $("next").addEventListener("click", () => { stopPlay(); step(1); });
-  $("play").addEventListener("click", () => {
-    if (timer) return stopPlay();
-    if (cur >= out.display.length - 1) cur = -1;
-    $("play").textContent = "❚❚ Pause";
-    timer = setInterval(() => { if (cur >= out.display.length - 1) return stopPlay(); step(1); }, 1100);
-  });
-  $("mStep").addEventListener("click", () => { showAll = false; $("mStep").classList.add("on"); $("mAll").classList.remove("on"); draw(); });
-  $("mAll").addEventListener("click", () => { showAll = true; $("mAll").classList.add("on"); $("mStep").classList.remove("on"); draw(); });
-  $("tbl").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-k]"); if (tr) { stopPlay(); cur = +tr.dataset.k; draw(); } });
+  const step = (d) => { cur = Math.max(0, Math.min(out.display.length - 1, cur + d)); draw(); };
+  $("pick").innerHTML = W11_SCENARIOS.map((x) => `<button type="button" data-id="${x.id}">${esc(x.label)}</button>`).join("");
+  $("pick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) pick(b.dataset.id); });
+  $("prev").addEventListener("click", () => step(-1));
+  $("next").addEventListener("click", () => step(1));
+  $("tbl").addEventListener("click", (e) => { const tr = e.target.closest("tr[data-k]"); if (tr) { cur = +tr.dataset.k; draw(); } });
   // one key handler at a time, even if the page is opened again without a reload
   if (window.__w11key) document.removeEventListener("keydown", window.__w11key);
   window.__w11key = (e) => {
     if (!document.getElementById("tbl")) return;
-    if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
-    if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); stopPlay(); step(1); }
-    if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); stopPlay(); step(-1); }
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); step(1); }
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); step(-1); }
   };
   document.addEventListener("keydown", window.__w11key);
-  applyPreset(W11_PRESETS[0]);
+  pick(W11_SCENARIOS[0].id);
 })();
 </script>
 {% endraw %}

@@ -24,7 +24,8 @@
 <div class="card">
   <p style="margin:0">Five questions, one for each topic from tonight. They are your own: nobody else has the same set.</p>
   <ol>
-    <li>Open <code>chinook.db</code> in your notebook (the same file as the lecture). The ERD is on the <a href="{{ url_for('week10.index') }}">Week 10 page</a>.</li>
+    <li>Download the class notebook and open it in Jupyter. Its <code>q()</code> loads the Chinook database for you. The ERD is on the <a href="{{ url_for('week10.index') }}">Week 10 page</a>.
+      <div style="margin:8px 0 4px"><a class="btn" href="{{ url_for('week11.notebook') }}">⬇ Lecture10_11_notebook.ipynb</a></div></li>
     <li>Write each query with a window function, and run it.</li>
     <li>Paste <strong>the query</strong> and <strong>the results</strong> as text. To copy all the rows: <code>print(q(sql).to_string(index=False))</code></li>
   </ol>

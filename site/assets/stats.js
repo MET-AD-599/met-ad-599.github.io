@@ -261,6 +261,17 @@ function w06(d) {
   return { ...t, types, sets, n_q, n_code: t.ans.filter((a) => a.q_no > 5 && a.code).length };
 }
 
+function w11(d) {
+  const t = taskCommon(d);
+  const anyQs = Object.values(d.details)[0] || [];
+  const n_q = anyQs.length || 5;
+  const by_q = [];
+  for (let i = 1; i <= n_q; i++) {
+    by_q.push({ q_no: i, skill: anyQs[i - 1]?.skill ?? "", ...slips(t.ans.filter((a) => a.q_no === i && a.answer)) });
+  }
+  return { ...t, by_q, details: d.details, n_q, n_code: t.ans.filter((a) => a.code).length };
+}
+
 
 // ---- w07 · live checkpoint results (no names) -----------------------------------------------------------------
 function w07Item(it, rows, key) {
@@ -388,4 +399,4 @@ function w10(d) {
   return { n, n_roster: d.n_roster, rows, top: ranked[0] || null, n_kinds: ranked.length, answers };
 }
 
-export const STATS = { w01, w02, w03, w04, w05, w06, w07, w08, w09, w10 };
+export const STATS = { w01, w02, w03, w04, w05, w06, w07, w08, w09, w10, w11 };

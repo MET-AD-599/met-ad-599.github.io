@@ -50,9 +50,9 @@ export async function call(route, args = {}) {
 // spec.prep : extra context derived in the browser   spec.download : turns the result into a file
 const W = (slug) => ({ w01: "w01", w02: "w02", w03: "w03", w04: "w04", w05: "w05", w06: "w06", w07: "w07", w08: "w08", w09: "w09", w10: "w10", w11: "w11" }[slug]);
 const ROUTES = [
-  ["GET", "/", { rpc: "home", tpl: "index.html", prep: (c) => {   // Weeks 10 and 11 pages need no submissions table: listed here if app.lectures lacks them
+  ["GET", "/", { rpc: "home", tpl: "index.html", prep: (c) => {   // listed here if app.lectures lacks it (Week 11 is in app.lectures)
     let items = c.items || [];
-    for (const it of [["w10", "Week 10 · Querying with SQL", true], ["w11", "Week 11 · Window functions", true]])
+    for (const it of [["w10", "Week 10 · Querying with SQL", true]])
       if (!items.some((x) => x[0] === it[0])) items = [...items, it];
     return { items }; } }],
   ["GET", "/login", { rpc: "me", tpl: "login.html", prep: (c, p, q) => ({ username: q.username || "" }) }],
@@ -155,8 +155,11 @@ const ROUTES = [
   ["GET", "/w10/date", { rpc: "w10_index", tpl: "w10/date.html" }],
   ["POST", "/w10/save", { rpc: "w10_save" }],
   ["GET", "/w10/etl", { rpc: "me", tpl: "w10/etl.html" }],
-  // w11: window function visualizer (Chinook rows built into the page; no database, no sign-in needed)
-  ["GET", "/w11/", { rpc: "me", tpl: "w11/index.html" }],
+  // w11: window functions. /w11/ = one question set per student (sign-in), query + results pasted as text;
+  // /w11/explore = the row-by-row stepper (Chinook rows built into the page, public)
+  ["GET", "/w11/", { rpc: "w11_index", tpl: "w11/index.html", prep: (c) => ({ mine: pydict(c.mine) }) }],
+  ["POST", "/w11/answers", { rpc: "w11_answers" }],
+  ["GET", "/w11/explore", { rpc: "me", tpl: "w11/explore.html" }],
 ];
 
 // w08 Team Working Document: each section's fields with their saved values, ready for the template
@@ -280,7 +283,7 @@ const ENDPOINTS = {
   "admin.w08_section": "/admin/w08/section", "admin.w08_doclock": "/admin/w08/doclock", "admin.w08_docs": "/admin/w08/docs",
   "week09.index": "/w09/", "week09.save": "/w09/save",
   "week10.index": "/w10/", "week10.date": "/w10/date", "week10.save": "/w10/save", "week10.etl": "/w10/etl",
-  "week11.index": "/w11/",
+  "week11.index": "/w11/", "week11.answers": "/w11/answers", "week11.explore": "/w11/explore",
   "admin.w09_live": "/admin/w09/analytics", "admin.w09_control": "/admin/w09/control", "admin.w09_section": "/admin/w09/section",
   "admin.project_key": "/admin/project/key",
 };
